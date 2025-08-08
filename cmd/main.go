@@ -2,7 +2,8 @@ package main
 
 import (
 	"log"
-	"pd_pritani/api/config"
+	"pd_pritani/internal/config"
+	"pd_pritani/internal/routes"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -15,12 +16,12 @@ func main() {
 	}
 
 	config.ConnectDB()
-
 	r := gin.Default()
 
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "Welcome"})
-	})
+	// routes
+	routes.RegisterUserRoutes(r)
 
+
+	// port
 	r.Run(":8080")
 }
