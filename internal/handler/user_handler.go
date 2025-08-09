@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"pd_pritani/internal/config"
 	"pd_pritani/internal/model"
+	"pd_pritani/internal/utils"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func GetUsers(c *gin.Context) {
@@ -23,7 +25,21 @@ func CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	if err := config.DB.First(&user).Error; err != nil {
+	// validate phone number
+	if err := utils.ValidatePhone(user.Phone); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		return
+	}
+	user.Password = string(hashedPassword)
+
+	if err := config.DB.Create(&user).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -52,9 +68,15 @@ func UpdateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
+
 	var input map[string]interface{}
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := utils.ValidatePhone(user.Phone); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Nomor telepon tidak valid"})
 		return
 	}
 
