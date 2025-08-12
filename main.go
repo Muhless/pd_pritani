@@ -21,7 +21,6 @@ func main() {
 	// routes
 	routes.RegisterUserRoutes(r)
 
-
 	// port
 	r.Run(":8080")
 }
