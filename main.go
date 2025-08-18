@@ -20,7 +20,7 @@ func main() {
 
 	// routes
 	routes.RegisterUserRoutes(r)
-
+	routes.RegisterAuthRoutes(r)
 	// port
 	r.Run(":8080")
 }

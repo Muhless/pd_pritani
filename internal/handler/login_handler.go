@@ -1,25 +1,34 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 	"pd_pritani/auth"
+
+	"github.com/gin-gonic/gin"
 )
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
+func LoginHandler(c *gin.Context) {
 	var req struct {
-		UserID uint   `json:"user_id"`
-		Email  string `json:"email"`
+		Username string `json:"username"`
+		Password string `json:"password"`
 	}
-	_ = json.NewDecoder(r.Body).Decode(&req)
-
-	token, err := auth.GenerateJWT(req.UserID, req.Email)
-	if err != nil {
-		http.Error(w, "Gagal membuat token", http.StatusInternalServerError)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	w.Header().Set("Content-Type ", "application/json")
-	
-	json.NewEncoder(w).Encode(map[string]string{"token": token}) 
+	// TODO: cek username & password dari database
+	if req.Username != "admin" || req.Password != "12345" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Username atau password salah"})
+		return
+	}
+
+	// Generate JWT
+	token, err := auth.GenerateJWT(1, req.Username) // contoh: user_id = 1
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal membuat token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }
