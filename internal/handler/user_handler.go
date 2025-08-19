@@ -14,6 +14,7 @@ func GetUsers(c *gin.Context) {
 	var users []model.User
 	if err := config.DB.Find(&users).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, users)
 }
