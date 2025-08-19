@@ -5,6 +5,7 @@ import (
 	"pd_pritani/internal/config"
 	"pd_pritani/internal/model"
 	"pd_pritani/internal/utils"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -90,10 +91,40 @@ func UpdateUser(ctx *gin.Context) {
 }
 
 func DeleteUser(ctx *gin.Context) {
-	id := ctx.Param("id")
-	if err := config.DB.Delete(&model.User{}, id).Error; err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	var user model.User
+	idParam := ctx.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid ID",
+		})
 		return
 	}
+
+	if err := config.DB.First(&user, id).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "User id not found",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	// tidak perlu id, karena sudah di first
+	if err := config.DB.Delete(&user).Error; err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to delete user data",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "User data successfully deleted",
+		"data":    user,
+	})
 
 }

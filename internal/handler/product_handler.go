@@ -48,7 +48,16 @@ func CreateProduct(ctx *gin.Context) {
 	// prefix agar tidak ada file dengan nama sama
 	filename := fmt.Sprintf("%d-%s", time.Now().Unix(), file.Filename)
 	path := fmt.Sprintf("uploads/%s", filename)
-	os.MkdirAll("uploads", os.ModePerm)
+
+	// buat folder uploads bila belum ada
+	if err := os.MkdirAll("uploads", os.ModePerm); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to create folder",
+			"error":   err.Error(),
+		})
+		return
+	}
 
 	if err := ctx.SaveUploadedFile(file, path); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -60,17 +69,6 @@ func CreateProduct(ctx *gin.Context) {
 	}
 
 	product.Photo = path
-
-	// TODO:GUNAKAN INI KALO GAADA FILE
-	// bind JSON ke struct product
-	// if err := ctx.ShouldBindJSON(&product); err != nil {
-	// 	ctx.JSON(http.StatusBadRequest, gin.H{
-	// 		"success": false,
-	// 		"message": "Failed to create data product",
-	// 		"error":   err.Error(),
-	// 	})
-	// 	return
-	// }
 
 	// simpan ke database
 	if err := config.DB.Create(&product).Error; err != nil {
@@ -84,5 +82,127 @@ func CreateProduct(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"success": true,
 		"data": product,
+	})
+}
+
+func GetProductByID(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var product model.Product
+
+	if err := config.DB.Find(&product, id).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "ID not found",
+			"error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    product,
+	})
+}
+
+func UpdateProduct(ctx *gin.Context) {
+	idParam := ctx.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid ID",
+		})
+		return
+	}
+
+	var product model.Product
+
+	if err := config.DB.First(&product, id).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "ID not found",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	var input map[string]interface{}
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Failed to bind data",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	// field yang bisa diupdate
+	allowedField := map[string]bool{
+		"name":  true,
+		"type":  true,
+		"stock": true,
+		"price": true,
+		"photo": true,
+	}
+
+	updateData := make(map[string]interface{})
+	for k, v := range input {
+		if allowedField[k] {
+			updateData[k] = v
+		}
+	}
+
+	if err := config.DB.Model(&product).Updates(updateData).Error; err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to update data product",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	// refresh data
+	config.DB.First(&product, id)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Successfully updated product data",
+		"data":    product,
+	})
+}
+
+func DeleteProduct(ctx *gin.Context) {
+	idParam := ctx.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid ID",
+		})
+		return
+	}
+	var product model.Product
+
+	if err := config.DB.First(&product, id).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "Product not found",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	// tidak perlu id lagi sudah di first
+	if err := config.DB.Delete(&product).Error; err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to delete product data",
+			"error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Product data successfully deleted",
+		"data":    product,
 	})
 }
