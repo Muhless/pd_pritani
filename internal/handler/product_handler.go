@@ -31,8 +31,27 @@ func CreateProduct(ctx *gin.Context) {
 	// ambil field selain file
 	product.Name = ctx.PostForm("name")
 	product.Type = ctx.PostForm("type")
-	product.Stock, _ = strconv.Atoi(ctx.PostForm("stock"))
-	product.Price, _ = strconv.Atoi(ctx.PostForm("price"))
+	// validasi stock
+	stock, err := strconv.Atoi(ctx.PostForm("stock"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid stock value",
+		})
+		return
+	}
+	product.Stock = stock
+
+	// validasi price
+	price, err := strconv.Atoi(ctx.PostForm("price"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid stock value",
+		})
+		return
+	}
+	product.Price = price
 
 	// ambil file photo
 	file, err := ctx.FormFile("photo")
@@ -68,7 +87,7 @@ func CreateProduct(ctx *gin.Context) {
 		return
 	}
 
-	product.Photo = path
+	product.Photo = filename
 
 	// simpan ke database
 	if err := config.DB.Create(&product).Error; err != nil {
