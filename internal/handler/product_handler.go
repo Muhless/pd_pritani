@@ -86,8 +86,8 @@ func CreateProduct(ctx *gin.Context) {
 		})
 		return
 	}
-
-	product.Photo = filename
+	baseURL := "http://localhost:8080"
+	product.Photo = fmt.Sprintf("%s/%s", baseURL, path)
 
 	// simpan ke database
 	if err := config.DB.Create(&product).Error; err != nil {
@@ -134,7 +134,6 @@ func UpdateProduct(ctx *gin.Context) {
 	}
 
 	var product model.Product
-
 	if err := config.DB.First(&product, id).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"success": false,
@@ -144,7 +143,25 @@ func UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
-	var input map[string]interface{}
+	file, _ := ctx.FormFile("photo")
+	if file != nil {
+		filename := fmt.Sprintf("%d-%s", time.Now().Unix(), file.Filename)
+		path := fmt.Sprintf("upload/%s", filename)
+
+		if err := os.Mkdir("uploads", os.ModePerm); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Failed to create folder", "error": err.Error()})
+			return
+		}
+
+		if err := ctx.SaveUploadedFile(file, path); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Failed to upload photo", "error": err.Error()})
+			return
+		}
+
+		product.Photo = fmt.Sprintf("http://localhost:8080/%s", path)
+	}
+
+	var input model.UpdateProductInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -154,23 +171,7 @@ func UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
-	// field yang bisa diupdate
-	allowedField := map[string]bool{
-		"name":  true,
-		"type":  true,
-		"stock": true,
-		"price": true,
-		"photo": true,
-	}
-
-	updateData := make(map[string]interface{})
-	for k, v := range input {
-		if allowedField[k] {
-			updateData[k] = v
-		}
-	}
-
-	if err := config.DB.Model(&product).Updates(updateData).Error; err != nil {
+	if err := config.DB.Model(&product).Updates(input).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "Failed to update data product",
