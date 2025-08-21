@@ -86,7 +86,7 @@ func CreateProduct(ctx *gin.Context) {
 		})
 		return
 	}
-	baseURL := "http://localhost:8080"
+	baseURL := os.Getenv("BASE_URL")
 	product.Photo = fmt.Sprintf("%s/%s", baseURL, path)
 
 	// simpan ke database
@@ -99,8 +99,9 @@ func CreateProduct(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"success": true,
-		"data": product,
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    product,
 	})
 }
 
@@ -108,7 +109,7 @@ func GetProductByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var product model.Product
 
-	if err := config.DB.Find(&product, id).Error; err != nil {
+	if err := config.DB.First(&product, id).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"success": false,
 			"message": "ID not found",

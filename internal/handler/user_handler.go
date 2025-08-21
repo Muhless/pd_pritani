@@ -4,7 +4,8 @@ import (
 	"net/http"
 	"pd_pritani/internal/config"
 	"pd_pritani/internal/model"
-	"pd_pritani/internal/utils"
+
+	// "pd_pritani/internal/utils"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -27,12 +28,6 @@ func CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	// validate phone number
-	if err := utils.ValidatePhone(user.Phone); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
 	// hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -47,8 +42,10 @@ func CreateUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
 		"message": "successfully created user data",
-		"data":    user})
+		"data":    user,
+	})
 }
 
 func GetUserByID(ctx *gin.Context) {
@@ -77,10 +74,10 @@ func UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	if err := utils.ValidatePhone(user.Phone); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Nomor telepon tidak valid"})
-		return
-	}
+	// if err := utils.ValidatePhone(user.Phone); err != nil {
+	// 	ctx.JSON(http.StatusBadRequest, gin.H{"error": "Nomor telepon tidak valid"})
+	// 	return
+	// }
 
 	if err := config.DB.Model(&user).Updates(input).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
