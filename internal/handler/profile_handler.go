@@ -147,3 +147,39 @@ func UpdateProfile(ctx *gin.Context) {
 		"data":    profile,
 	})
 }
+
+func DeleteProfile(ctx *gin.Context) {
+	var profile model.Profile
+	idParam := ctx.Param("id")
+	id, err := strconv.Atoi(idParam)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid ID",
+		})
+		return
+	}
+
+	if err := config.DB.First(&profile, id).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "Data profile not found",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	if err := config.DB.Delete(&profile).Error; err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to delete profile data",
+			"error":   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    profile,
+	})
+}

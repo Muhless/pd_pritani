@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Profile struct {
 	ID        uint      `json:"id" gorm:"primaryKey;autoIncrement"`

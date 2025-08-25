@@ -22,6 +22,7 @@ func main() {
 	routes.RegisterUserRoutes(r)
 	routes.RegisterAuthRoutes(r)
 	routes.RegisterProductRoutes(r)
+	routes.RegisterProfileRoutes(r)
 	r.Static("/uploads", "./uploads")
 	// port
 	r.Run(":8080")
