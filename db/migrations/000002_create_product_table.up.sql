@@ -1,11 +1,11 @@
 CREATE TABLE
           IF NOT EXISTS products (
-                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                     name VARCHAR(30) NOT NULL,
-                    photo TEXT NULL,
+                    photo TEXT,
                     type VARCHAR(30) NOT NULL,
                     stock INT NOT NULL,
-                    price INT NOT NULL,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    price NUMERIC(12, 2) NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
