@@ -1,6 +1,10 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/shopspring/decimal"
+)
 
 // This is only enum
 type TransactionStatus string
@@ -14,6 +18,8 @@ const (
 // Status using GORM + Enum
 type Transaction struct {
 	ID        uint              `json:"id" gorm:"primaryKey;autoIncrement"`
+	Quantity  uint              `json:"quantity" gorm:"not null"`
+	Amount    decimal.Decimal   `json:"amount" gorm:"type:numeric(12,2);not null"`
 	Status    TransactionStatus `json:"status" gorm:"type:enum('selesai', 'dibatalkan', 'diproses);default:'diproses'"`
 	CreatedAt time.Time         `json:"created_at"`
 	UpdatedAt time.Time         `json:"updated_at"`

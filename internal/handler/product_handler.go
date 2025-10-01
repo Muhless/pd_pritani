@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 )
 
 func GetProduct(ctx *gin.Context) {
@@ -42,15 +43,16 @@ func CreateProduct(ctx *gin.Context) {
 	}
 	product.Stock = stock
 
-	// validasi price
-	price, err := strconv.Atoi(ctx.PostForm("price"))
+	priceStr := ctx.PostForm("price")
+	price, err := decimal.NewFromString(priceStr)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message": "Invalid stock value",
+			"message": "Invalid price value",
 		})
 		return
 	}
+
 	product.Price = price
 
 	// ambil file photo
