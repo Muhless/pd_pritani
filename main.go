@@ -5,6 +5,7 @@ import (
 	"pd_pritani/internal/config"
 	"pd_pritani/internal/routes"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -17,6 +18,11 @@ func main() {
 
 	config.ConnectDB()
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"http://localhost:3000"},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders: []string{"Content-Type", "Authorization"},
+	}))
 
 	// routes
 	routes.RegisterUserRoutes(r)
@@ -24,6 +30,11 @@ func main() {
 	routes.RegisterProductRoutes(r)
 	routes.RegisterProfileRoutes(r)
 	r.Static("/uploads", "./uploads")
+
 	// port
+	for _, ri := range r.Routes() {
+		println(ri.Method, ri.Path)
+	}
+
 	r.Run(":8080")
 }

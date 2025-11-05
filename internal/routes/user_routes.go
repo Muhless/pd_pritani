@@ -7,7 +7,7 @@ import (
 )
 
 func RegisterUserRoutes(r *gin.Engine)  {
-	userGroup := r.Group("/users")
+	userGroup := r.Group("/api/users")
 	{
 		userGroup.GET("/", handler.GetUsers)
 		userGroup.GET("/:id", handler.GetUserByID)
