@@ -9,11 +9,11 @@ import (
 func RegisterProfileRoutes(r *gin.Engine) {
 	ProfileGroup := r.Group("/profiles")
 	{
-		ProfileGroup.POST("", handler.CreateProfile)
-		ProfileGroup.GET("", handler.GetProfile)
-		ProfileGroup.GET("/:id", handler.GetProfileByID)
-		ProfileGroup.PATCH("/:id", handler.UpdateProfile)
-		ProfileGroup.DELETE("/id", handler.DeleteProfile)
+		ProfileGroup.POST("", handler.CreateEmployee)
+		ProfileGroup.GET("", handler.GetEmployee)
+		ProfileGroup.GET("/:id", handler.GetEmployeeByID)
+		ProfileGroup.PATCH("/:id", handler.UpdateEmployee)
+		ProfileGroup.DELETE("/id", handler.DeleteEmployee)
 	}
 
 }

@@ -14,13 +14,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateProfile(ctx *gin.Context) {
-	var profile model.Profile
+func CreateEmployee(ctx *gin.Context) {
+	var employee model.Employee
 
-	profile.Name = ctx.PostForm("name")
-	profile.Phone = ctx.PostForm("phone")
+	employee.Name = ctx.PostForm("name")
+	employee.Phone = ctx.PostForm("phone")
 
-	if err := utils.ValidatePhone(profile.Phone); err != nil {
+	if err := utils.ValidatePhone(employee.Phone); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Invalid phone number",
@@ -41,9 +41,9 @@ func CreateProfile(ctx *gin.Context) {
 
 	// prefix
 	fileName := fmt.Sprintf("%d-%s", time.Now().Unix(), file.Filename)
-	path := filepath.Join("uploads", "profile", fileName)
+	path := filepath.Join("uploads", "employee", fileName)
 
-	if err := os.MkdirAll("uploads/profile", os.ModePerm); err != nil {
+	if err := os.MkdirAll("uploads/employee", os.ModePerm); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "Failed to create folder",
@@ -62,26 +62,26 @@ func CreateProfile(ctx *gin.Context) {
 	}
 
 	baseURL := os.Getenv("BASE_URL")
-	profile.Photo = fmt.Sprintf("%s/%s", baseURL, path)
+	employee.Photo = fmt.Sprintf("%s/%s", baseURL, path)
 
-	if err := config.DB.Create(&profile).Error; err != nil {
+	if err := config.DB.Create(&employee).Error; err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message": "Failed to create profile data",
+			"message": "Failed to create employee data",
 			"error":   err.Error(),
 		})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data":    profile,
+		"data":    employee,
 	})
 }
 
-func GetProfile(ctx *gin.Context) {
-	var profile []model.Profile
+func GetEmployee(ctx *gin.Context) {
+	var employee []model.Employee
 
-	if err := config.DB.Find(&profile).Error; err != nil {
+	if err := config.DB.Find(&employee).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "Data not found",
@@ -91,12 +91,12 @@ func GetProfile(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data":    profile,
+		"data":    employee,
 	})
 }
 
-func GetProfileByID(ctx *gin.Context) {
-	var profile model.Profile
+func GetEmployeeByID(ctx *gin.Context) {
+	var employee model.Employee
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)
 
@@ -108,22 +108,22 @@ func GetProfileByID(ctx *gin.Context) {
 		return
 	}
 
-	if err := config.DB.First(&profile, id).Error; err != nil {
+	if err := config.DB.First(&employee, id).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"success": false,
-			"message": "Profile data not found",
+			"message": "employee data not found",
 			"error":   err.Error(),
 		})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data":    profile,
+		"data":    employee,
 	})
 }
 
-func UpdateProfile(ctx *gin.Context) {
-	var profile model.Profile
+func UpdateEmployee(ctx *gin.Context) {
+	var employee model.Employee
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
@@ -134,7 +134,7 @@ func UpdateProfile(ctx *gin.Context) {
 		return
 	}
 
-	if err := config.DB.Find(&profile, id).Error; err != nil {
+	if err := config.DB.Find(&employee, id).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"success": false,
 			"message": "ID not found",
@@ -144,12 +144,12 @@ func UpdateProfile(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data":    profile,
+		"data":    employee,
 	})
 }
 
-func DeleteProfile(ctx *gin.Context) {
-	var profile model.Profile
+func DeleteEmployee(ctx *gin.Context) {
+	var employee model.Employee
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)
 
@@ -161,25 +161,25 @@ func DeleteProfile(ctx *gin.Context) {
 		return
 	}
 
-	if err := config.DB.First(&profile, id).Error; err != nil {
+	if err := config.DB.First(&employee, id).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"success": false,
-			"message": "Data profile not found",
+			"message": "Data employee not found",
 			"error":   err.Error(),
 		})
 		return
 	}
 
-	if err := config.DB.Delete(&profile).Error; err != nil {
+	if err := config.DB.Delete(&employee).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"message": "Failed to delete profile data",
+			"message": "Failed to delete employee data",
 			"error":   err.Error(),
 		})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data":    profile,
+		"data":    employee,
 	})
 }

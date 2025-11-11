@@ -4,12 +4,12 @@ import (
 	"time"
 )
 
-type Profile struct {
+type Employee struct {
 	ID        uint      `json:"id" gorm:"primaryKey;autoIncrement"`
-	UserID    uint      `json:"user_id" gorm:"uniqueIndex"`
 	Name      string    `json:"name"`
-	Photo     string    `json:"photo"`
 	Phone     string    `json:"phone" gorm:"unique"`
+	Address   string    `json:"address"`
+	Photo     string    `json:"photo"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
