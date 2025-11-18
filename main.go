@@ -20,7 +20,7 @@ func main() {
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"http://localhost:3000"},
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowHeaders: []string{"Content-Type", "Authorization"},
 	}))
 
@@ -28,7 +28,7 @@ func main() {
 	routes.RegisterUserRoutes(r)
 	routes.RegisterAuthRoutes(r)
 	routes.RegisterProductRoutes(r)
-	routes.RegisterProfileRoutes(r)
+	routes.RegisterEmployeeRoutes(r)
 	r.Static("/uploads", "./uploads")
 
 	// port

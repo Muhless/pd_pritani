@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"mime/multipart"
 	"net/http"
@@ -15,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 )
 
 func GetProduct(ctx *gin.Context) {
@@ -349,33 +351,45 @@ func DeleteProduct(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message": "Invalid ID",
+			"message": "Invalid product ID format",
 		})
 		return
 	}
+
 	var product model.Product
 
+	// Cek apakah product exists
 	if err := config.DB.First(&product, id).Error; err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"message": "Product not found",
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"message": "Product not found",
+			"message": "Failed to fetch product",
 			"error":   err.Error(),
 		})
 		return
 	}
 
-	// tidak perlu id lagi sudah di first
 	if err := config.DB.Delete(&product).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"message": "Failed to delete product data",
+			"message": "Failed to delete product",
 			"error":   err.Error(),
 		})
 		return
 	}
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": "Product data successfully deleted",
-		"data":    product,
+		"message": "Product successfully deleted",
+		"data": gin.H{
+			"id": id,
+		},
 	})
 }
