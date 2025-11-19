@@ -21,7 +21,7 @@ import (
 
 func GetProduct(ctx *gin.Context) {
 	var products []model.Product
-	if err := config.DB.Find(&products).Error; err != nil {
+	if err := config.DB.Order("id ASC").Find(&products).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "Failed to fetch product data",

@@ -88,7 +88,7 @@ func CreateEmployee(ctx *gin.Context) {
 func GetEmployee(ctx *gin.Context) {
 	var employee []model.Employee
 
-	if err := config.DB.Find(&employee).Error; err != nil {
+	if err := config.DB.Order("id ASC").Find(&employee).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "Data not found",
