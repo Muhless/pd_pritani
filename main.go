@@ -29,6 +29,8 @@ func main() {
 	routes.RegisterAuthRoutes(r)
 	routes.RegisterProductRoutes(r)
 	routes.RegisterEmployeeRoutes(r)
+	routes.RegisterCustomerRoutes(r)
+
 	r.Static("/uploads", "./uploads")
 
 	// port

@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 	"pd_pritani/internal/config"
-	"pd_pritani/internal/model"
+	"pd_pritani/internal/model/customer"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -14,10 +14,10 @@ func GetCustomer(ctx *gin.Context) {
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
 	offset := (page - 1) * limit
 
-	var customers []model.Customer
+	var customers []customer.Customer
 	var total int64
 
-	config.DB.Model(&model.Customer{}).Count(&total)
+	config.DB.Model(&customer.Customer{}).Count(&total)
 
 	if err := config.DB.Limit(limit).Offset(offset).Find(&customers).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
