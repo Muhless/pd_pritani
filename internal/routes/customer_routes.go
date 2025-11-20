@@ -9,7 +9,7 @@ import (
 func RegisterCustomerRoutes(r *gin.Engine) {
 	customerGroup := r.Group("/customers")
 	{
-		customerGroup.GET("", handler.GetCustomer)
+		customerGroup.GET("", handler.GetCustomers)
 		customerGroup.POST("", handler.CreateCustomer)
 	}
 
