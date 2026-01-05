@@ -1,0 +1,26 @@
+services:
+  app:
+    build: .
+    container_name: pg_pritani_go
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://postgres:MUHLESS717GG@localhost:5432/pg_pritani?sslmode=disable
+
+  db:
+    image: postgres:15
+    container_name: db_pritani
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: MUHLESS717GG
+      POSTGRES_DB: pg_pritani
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
