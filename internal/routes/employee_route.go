@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterEmployeeRoutes(r *gin.Engine) {
+func RegisterEmployeeRoutes(r *gin.RouterGroup) {
 	EmployeeGroup := r.Group("/employees")
 	{
 		EmployeeGroup.POST("", handler.CreateEmployee)

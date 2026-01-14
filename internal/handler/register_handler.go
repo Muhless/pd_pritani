@@ -3,36 +3,35 @@ package handler
 import (
 	"net/http"
 	"pd_pritani/internal/config"
+	"pd_pritani/internal/dto"
 	"pd_pritani/internal/model"
+	"pd_pritani/internal/model/employee"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterHandler(c *gin.Context) {
-	var input struct {
-		Username string `json:"username" binding:"required"`
-		Email    string `json:"email" binding:"required"`
-		Password string `json:"password" binding:"required"`
-		Role     string `json:"role"`
-	}
+func RegisterHandler(ctx *gin.Context) {
+	var input dto.RegisterInput
 
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest,
+			gin.H{
+				"message": "Input not valid",
+				"error":   err.Error()})
 		return
 	}
 
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal hash password"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Hashing password failed"})
 		return
 	}
 
 	user := model.User{
 		Username:  input.Username,
-		Email:     input.Email,
 		Password:  string(hashedPassword),
 		Role:      input.Role,
 		CreatedAt: time.Now(),
@@ -40,9 +39,46 @@ func RegisterHandler(c *gin.Context) {
 	}
 
 	if err := config.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Registrasi berhasil", "user": user})
+	switch input.Role {
+	case "admin":
+		admin := model.Admin{
+			UserID: user.ID,
+			Name:   input.Name,
+			Email:  input.Email,
+			Phone:  input.Phone,
+			Photo:  input.Photo,
+			Status: "active",
+		}
+		if err := config.DB.Create(&admin).Error; err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
+
+	case "employee":
+		employee := employee.Employee{
+			UserID:  user.ID,
+			Name:    input.Name,
+			Phone:   input.Phone,
+			Address: input.Address,
+			Photo:   input.Photo,
+			Status:  "active",
+		}
+
+		if err := config.DB.Create(&employee).Error; err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
+	}
+
+	user.Password = ""
+
+	ctx.JSON(http.StatusCreated, gin.H{"message": "Registrasi berhasil", "user": user})
 }

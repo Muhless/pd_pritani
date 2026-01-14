@@ -10,23 +10,24 @@ import (
 var jwtKey = []byte(os.Getenv("JWT_SECRET"))
 
 type JWTClaim struct {
-	UserID uint   `json:"user_id"`
-	Name   string `json:"name"`
+	UserID   uint   `json:"user_id"`
+	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(userID uint, name string) (string, error) {
+func GenerateJWT(userID uint, username string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 
 	claims := &JWTClaim{
-		UserID: userID,
-		Name:   name,
+		UserID:   userID,
+		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtKey)
 }
 
@@ -35,6 +36,9 @@ func ValidateToken(tokenString string) (*JWTClaim, error) {
 		tokenString,
 		&JWTClaim{},
 		func(t *jwt.Token) (interface{}, error) {
+			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, jwt.ErrSignatureInvalid
+			}
 			return jwtKey, nil
 		},
 	)

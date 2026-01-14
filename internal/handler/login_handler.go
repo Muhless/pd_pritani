@@ -34,6 +34,7 @@ func LoginHandler(c *gin.Context) {
 		})
 		return
 	}
+	// log.Println("JWT_SECRET:", os.Getenv("JWT_SECRET"))
 
 	var user model.User
 	if err := config.DB.Where("username = ?", req.Username).First(&user).Error; err != nil {

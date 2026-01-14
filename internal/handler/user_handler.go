@@ -44,6 +44,8 @@ func CreateUser(ctx *gin.Context) {
 		return
 	}
 
+	user.Password = ""
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "successfully created user data",

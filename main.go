@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"pd_pritani/internal/config"
+	"pd_pritani/internal/middleware"
 	"pd_pritani/internal/routes"
 
 	"github.com/gin-contrib/cors"
@@ -25,11 +26,18 @@ func main() {
 	}))
 
 	// routes
-	routes.RegisterUserRoutes(r)
-	routes.RegisterAuthRoutes(r)
-	routes.RegisterProductRoutes(r)
-	routes.RegisterEmployeeRoutes(r)
-	routes.RegisterCustomerRoutes(r)
+
+	api := r.Group("/api")
+	routes.RegisterAuthRoutes(api)
+
+	protected := api.Group("/")
+	protected.Use(middleware.AuthMiddleware())
+	{
+		routes.RegisterUserRoutes(protected)
+		routes.RegisterProductRoutes(protected)
+		routes.RegisterEmployeeRoutes(protected)
+		routes.RegisterCustomerRoutes(protected)
+	}
 
 	r.Static("/uploads", "./uploads")
 

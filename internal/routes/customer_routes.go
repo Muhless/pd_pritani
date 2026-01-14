@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterCustomerRoutes(r *gin.Engine) {
+func RegisterCustomerRoutes(r *gin.RouterGroup) {
 	customerGroup := r.Group("/customers")
 	{
 		customerGroup.GET("", handler.GetCustomers)
