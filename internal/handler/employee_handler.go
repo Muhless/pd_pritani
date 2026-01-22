@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"pd_pritani/internal/config"
-	"pd_pritani/internal/model/employee"
+	"pd_pritani/internal/model"
 	"pd_pritani/internal/utils"
 	"strconv"
 	"strings"
@@ -16,7 +16,7 @@ import (
 )
 
 func CreateEmployee(ctx *gin.Context) {
-	var employee employee.Employee
+	var employee model.Employee
 
 	employee.Name = ctx.PostForm("name")
 	employee.Phone = ctx.PostForm("phone")
@@ -86,7 +86,7 @@ func CreateEmployee(ctx *gin.Context) {
 }
 
 func GetEmployee(ctx *gin.Context) {
-	var employee []employee.Employee
+	var employee []model.Employee
 
 	if err := config.DB.Order("id ASC").Find(&employee).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -103,7 +103,7 @@ func GetEmployee(ctx *gin.Context) {
 }
 
 func GetEmployeeByID(ctx *gin.Context) {
-	var employee employee.Employee
+	var employee model.Employee
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)
 
@@ -130,7 +130,7 @@ func GetEmployeeByID(ctx *gin.Context) {
 }
 
 func UpdateEmployee(ctx *gin.Context) {
-	var employee employee.Employee
+	var employee model.Employee
 
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -194,7 +194,7 @@ func UpdateEmployee(ctx *gin.Context) {
 }
 
 func DeleteEmployee(ctx *gin.Context) {
-	var employee employee.Employee
+	var employee model.Employee
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)
 

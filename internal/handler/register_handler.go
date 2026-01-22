@@ -5,8 +5,6 @@ import (
 	"pd_pritani/internal/config"
 	"pd_pritani/internal/dto"
 	"pd_pritani/internal/model"
-	"pd_pritani/internal/model/employee"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -16,34 +14,65 @@ func RegisterHandler(ctx *gin.Context) {
 	var input dto.RegisterInput
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest,
-			gin.H{
-				"message": "Input not valid",
-				"error":   err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "Input tidak valid",
+			"error":   err.Error(),
+		})
 		return
 	}
 
-	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Hashing password failed"})
+	// validasi role
+	if input.Role != "admin" && input.Role != "employee" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "Role tidak valid",
+		})
 		return
 	}
+
+	// cek username
+	var count int64
+	config.DB.Model(&model.User{}).
+		Where("username = ?", input.Username).
+		Count(&count)
+
+	if count > 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "Username sudah digunakan",
+		})
+		return
+	}
+
+	// hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(input.Password),
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Gagal hash password",
+		})
+		return
+	}
+
+	// TRANSACTION
+	tx := config.DB.Begin()
 
 	user := model.User{
-		Username:  input.Username,
-		Password:  string(hashedPassword),
-		Role:      input.Role,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		Username: input.Username,
+		Password: string(hashedPassword),
+		Role:     input.Role,
 	}
 
-	if err := config.DB.Create(&user).Error; err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := tx.Create(&user).Error; err != nil {
+		tx.Rollback()
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
 		return
 	}
 
 	switch input.Role {
+
 	case "admin":
 		admin := model.Admin{
 			UserID: user.ID,
@@ -51,9 +80,10 @@ func RegisterHandler(ctx *gin.Context) {
 			Email:  input.Email,
 			Phone:  input.Phone,
 			Photo:  input.Photo,
-			Status: "active",
 		}
-		if err := config.DB.Create(&admin).Error; err != nil {
+
+		if err := tx.Create(&admin).Error; err != nil {
+			tx.Rollback()
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"message": err.Error(),
 			})
@@ -61,7 +91,7 @@ func RegisterHandler(ctx *gin.Context) {
 		}
 
 	case "employee":
-		employee := employee.Employee{
+		employee := model.Employee{
 			UserID:  user.ID,
 			Name:    input.Name,
 			Phone:   input.Phone,
@@ -70,7 +100,8 @@ func RegisterHandler(ctx *gin.Context) {
 			Status:  "active",
 		}
 
-		if err := config.DB.Create(&employee).Error; err != nil {
+		if err := tx.Create(&employee).Error; err != nil {
+			tx.Rollback()
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"message": err.Error(),
 			})
@@ -78,7 +109,12 @@ func RegisterHandler(ctx *gin.Context) {
 		}
 	}
 
+	tx.Commit()
+
 	user.Password = ""
 
-	ctx.JSON(http.StatusCreated, gin.H{"message": "Registrasi berhasil", "user": user})
+	ctx.JSON(http.StatusCreated, gin.H{
+		"message": "Registrasi berhasil",
+		"user":    user,
+	})
 }

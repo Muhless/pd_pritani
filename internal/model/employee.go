@@ -1,7 +1,6 @@
-package employee
+package model
 
 import (
-	"os/user"
 	"time"
 )
 
@@ -14,8 +13,8 @@ const (
 
 type Employee struct {
 	ID     uint `json:"id" gorm:"primaryKey;autoIncrement"`
-	UserID uint
-	User   user.User `gorm:"constraint:onDelete:CASCADE"`
+	UserID uint `json:"user_id" gorm:"uniqueIndex;not null"`
+	User   User `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:onUpdate:CASCADE,onDelete:CASCADE"`
 
 	Name      string    `json:"name"`
 	Phone     string    `json:"phone" gorm:"unique"`
