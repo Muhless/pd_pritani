@@ -37,9 +37,7 @@ func CreateProduct(ctx *gin.Context) {
 
 	var product model.Product
 
-	// Parse product data berdasarkan content type
 	if strings.Contains(contentType, "application/json") {
-		// Mode JSON (tanpa file upload)
 		if err := ctx.ShouldBindJSON(&product); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"success": false,
@@ -49,8 +47,6 @@ func CreateProduct(ctx *gin.Context) {
 			return
 		}
 
-		// Untuk JSON mode, photo bisa berupa URL atau kosong
-		// Validasi basic
 		if err := validateProduct(&product); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"success": false,
@@ -59,7 +55,6 @@ func CreateProduct(ctx *gin.Context) {
 			return
 		}
 
-		// Simpan ke database
 		if err := config.DB.Create(&product).Error; err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,
@@ -175,16 +170,13 @@ func CreateProduct(ctx *gin.Context) {
 		return
 	}
 
-	// Generate photo URL
 	baseURL := strings.TrimSuffix(os.Getenv("BASE_URL"), "/")
 	if baseURL == "" {
-		baseURL = "http://localhost:8080" // default untuk development
+		baseURL = "http://localhost:8080"
 	}
 	product.Photo = fmt.Sprintf("%s/%s", baseURL, path)
 
-	// Simpan ke database
 	if err := config.DB.Create(&product).Error; err != nil {
-		// Cleanup: hapus file yang sudah diupload jika database gagal
 		os.Remove(path)
 
 		ctx.JSON(http.StatusInternalServerError, gin.H{
