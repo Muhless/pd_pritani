@@ -4,48 +4,31 @@ import (
 	"log"
 	"net/http"
 	"pd_pritani/internal/config"
-	"pd_pritani/internal/model/customer"
-	"strconv"
+	"pd_pritani/internal/model"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetCustomers(c *gin.Context) {
-	page, _ := strconv.Atoi(c.Query("page"))
-	limit, _ := strconv.Atoi(c.Query("limit"))
+func GetCustomers(ctx *gin.Context) {
+	var customers []model.Customer
 
-	if page <= 0 {
-		page = 1
+	if err := config.DB.Order("id ASC").Find(&customers).Error; err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Data not found",
+			"error":   err.Error(),
+		})
+		return
 	}
-	if limit <= 0 {
-		limit = 10
-	}
-
-	offset := (page - 1) * limit
-
-	var customers []customer.Customer
-	var total int64
-
-	// Hitung total data
-	config.DB.Model(&customer.Customer{}).Count(&total)
-
-	// Ambil data dengan pagination
-	config.DB.
-		Limit(limit).
-		Offset(offset).
-		Order("id DESC").
-		Find(&customers)
-
-	// Response
-	c.JSON(200, gin.H{
-		"data":  customers,
-		"total": total,
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    customers,
 	})
 }
 
 func CreateCustomer(ctx *gin.Context) {
-	var customer customer.Customer
+	var customer model.Customer
 
 	if err := ctx.ShouldBindJSON(&customer); err != nil {
 		log.Println("JSON bind error:", err)
