@@ -1,4 +1,4 @@
-CREATE TYPE employee_status AS ENUM ('active', 'inactive');
+CREATE TYPE IF NOT EXISTS employee_status AS ENUM ('active', 'inactive');
 
 CREATE TABLE
           IF NOT EXISTS employees (
