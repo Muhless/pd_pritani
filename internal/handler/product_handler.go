@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -39,6 +40,7 @@ func CreateProduct(ctx *gin.Context) {
 
 	if strings.Contains(contentType, "application/json") {
 		if err := ctx.ShouldBindJSON(&product); err != nil {
+			log.Printf("❌ JSON Bind Error: %v", err)
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"success": false,
 				"message": "Invalid JSON body",
@@ -48,6 +50,7 @@ func CreateProduct(ctx *gin.Context) {
 		}
 
 		if err := validateProduct(&product); err != nil {
+			log.Printf("❌ Validation Error: %v", err)
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"success": false,
 				"message": err.Error(),
@@ -78,6 +81,7 @@ func CreateProduct(ctx *gin.Context) {
 	// Parse stock
 	stockStr := ctx.PostForm("stock")
 	if stockStr == "" {
+		log.Printf("❌ Stock is empty")
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Stock is required",
@@ -86,6 +90,7 @@ func CreateProduct(ctx *gin.Context) {
 	}
 	stock, err := strconv.Atoi(stockStr)
 	if err != nil {
+		log.Printf("❌ Stock parse error: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Invalid stock value, must be a number",
@@ -98,6 +103,7 @@ func CreateProduct(ctx *gin.Context) {
 	priceStr := ctx.PostForm("price")
 	price, err := decimal.NewFromString(priceStr)
 	if err != nil {
+		log.Printf("❌ Price is empty")
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Invalid price value",
@@ -108,6 +114,7 @@ func CreateProduct(ctx *gin.Context) {
 
 	// Validasi basic fields
 	if err := validateProduct(&product); err != nil {
+		log.Printf("❌ Price parse error: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": err.Error(),
@@ -118,6 +125,7 @@ func CreateProduct(ctx *gin.Context) {
 	// Ambil dan validasi file photo
 	file, err := ctx.FormFile("photo")
 	if err != nil {
+		log.Printf("❌ Product validation error: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Photo is required",
@@ -129,6 +137,7 @@ func CreateProduct(ctx *gin.Context) {
 	// Validasi file size (max 5MB)
 	maxFileSize := int64(5 * 1024 * 1024) // 5MB
 	if file.Size > maxFileSize {
+		log.Printf("photo file error: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "File size must be less than 5MB",
