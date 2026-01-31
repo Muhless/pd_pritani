@@ -10,4 +10,6 @@ type Customer struct {
 	Company   string    `json:"company"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+
+	Sales []Sales `json:"sales,omitempty" gorm:"foreignKey:CustomerID"`
 }
