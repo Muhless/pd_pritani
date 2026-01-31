@@ -1,5 +1,3 @@
-CREATE TYPE sales_status AS ENUM ('unpaid', 'partial', 'paid', 'cancelled');
-
 CREATE TABLE
           IF NOT EXISTS sales (
                     id BIGSERIAL PRIMARY KEY,
