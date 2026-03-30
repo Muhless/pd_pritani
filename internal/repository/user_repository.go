@@ -1,1 +1,28 @@
 package repository
+
+import (
+	"pd_pritani/internal/model"
+
+	"gorm.io/gorm"
+)
+
+type UserRepository interface {
+	FindByUsername(username string) (*model.User, error)
+}
+
+type userRepository struct {
+	db *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) UserRepository {
+	return &userRepository{db}
+}
+
+func (r *userRepository) FindByUsername(username string) (*model.User, error) {
+	var user model.User
+	err := r.db.Where("username = ?", username).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
