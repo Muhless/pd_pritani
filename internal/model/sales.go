@@ -24,7 +24,7 @@ type Sales struct {
 	TotalAmount     decimal.Decimal `json:"total_amount"`
 	PaidAmount      decimal.Decimal `json:"paid_amount"`
 	RemainingAmount decimal.Decimal `json:"remaining_amount"`
-	Status          SalesStatus     `json:"status"`
+	Status          SalesStatus     `json:"status"`	
 	Note            string          `json:"note"`
 	CreatedAt       time.Time       `json:"created_at"`
 	UpdatedAt       time.Time       `json:"updated_at"`

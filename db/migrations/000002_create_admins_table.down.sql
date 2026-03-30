@@ -1,1 +1,2 @@
 DROP TABLE IF EXISTS admins;
+DROP TYPE IF EXISTS admin_status;
