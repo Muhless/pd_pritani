@@ -7,8 +7,8 @@ import (
 type EmployeeStatus string
 
 const (
-	StatusActive   EmployeeStatus = "active"
-	StatusInActive EmployeeStatus = "inactive"
+	EmployeeStatusActive   EmployeeStatus = "active"
+	EmployeeStatusInActive EmployeeStatus = "inactive"
 )
 
 type Employee struct {

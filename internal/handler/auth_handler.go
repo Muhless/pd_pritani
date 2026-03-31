@@ -23,7 +23,7 @@ type LoginRequest struct {
 type RegisterRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
-	Role     string `json:"role" binding:"required, oneof=admin employee"`
+	Role     string `json:"role" binding:"required,oneof=admin employee"`
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {

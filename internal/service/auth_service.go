@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"log"
+	"fmt"
 	"os"
 	"pd_pritani/internal/model"
 	"pd_pritani/internal/repository"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type AuthService interface {
@@ -18,32 +19,37 @@ type AuthService interface {
 }
 
 type authService struct {
-	userRepo repository.UserRepository
+	db           *gorm.DB
+	userRepo     repository.UserRepository
+	adminRepo    repository.AdminRepository
+	employeeRepo repository.EmployeeRepository
 }
 
-func NewAuthService(userRepo repository.UserRepository) AuthService {
-	return &authService{userRepo}
+func NewAuthService(
+	db *gorm.DB,
+	userRepo repository.UserRepository,
+	adminRepo repository.AdminRepository,
+	employeeRepo repository.EmployeeRepository,
+) AuthService {
+	return &authService{db, userRepo, adminRepo, employeeRepo}
 }
 
 func (s *authService) Login(username, password string) (string, error) {
 	// cari user by username
 	user, err := s.userRepo.FindByUsername(username)
 	if err != nil {
-		log.Println("error find user:", err)
 		return "", errors.New("Invalid Username or Password")
 	}
 
 	// make bycript
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		log.Println("error password:", err)
 		return "", errors.New("Invalid username or password")
 	}
 
 	// generate token
 	token, err := generateJWT(user)
 	if err != nil {
-		log.Println("error jwt:", err)
 		return "", errors.New("Failed generating token")
 	}
 	return token, nil
@@ -51,7 +57,6 @@ func (s *authService) Login(username, password string) (string, error) {
 
 func generateJWT(user *model.User) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
-	log.Println("secret generated in JWT:", secret)
 
 	claims := jwt.MapClaims{
 		"user_id": user.ID,
@@ -69,18 +74,40 @@ func (s *authService) Register(username, password, role string) error {
 		return errors.New("Failed hashing password")
 	}
 
-	// make user
-	user := &model.User{
-		Username: username,
-		Password: string(hashedPassword),
-		Role:     role,
-	}
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		// make user
+		user := &model.User{
+			Username: username,
+			Password: string(hashedPassword),
+			Role:     role,
+		}
+		err = s.userRepo.Create(user)
+		if err != nil {
+			return errors.New("Username already used")
+		}
 
-	// save to db
-	err = s.userRepo.Create(user)
-	if err != nil {
-		return errors.New("Username already used")
-	}
-	return nil
-
+		switch role {
+		case "admin":
+			admin := &model.Admin{
+				UserID: user.ID,
+				Name:   fmt.Sprintf("user%d", user.ID),
+				Status: model.AdminStatusActive,
+			}
+			if err := tx.Create(admin).Error; err != nil {
+				return errors.New("Failed creating admin record")
+			}
+		case "employee":
+			employee := &model.Employee{
+				UserID: user.ID,
+				Name:   fmt.Sprintf("user%d", user.ID),
+				Status: model.EmployeeStatusActive,
+			}
+			if err := tx.Create(employee).Error; err != nil {
+				return errors.New("Failed creating employee record")
+			}
+		default:
+			return errors.New("Role doesn't valid")
+		}
+		return nil
+	})
 }

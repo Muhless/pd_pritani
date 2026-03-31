@@ -20,7 +20,10 @@ func main() {
 	db := config.ConnectDB()
 
 	userRepo := repository.NewUserRepository(db)
-	authService := service.NewAuthService(userRepo)
+	adminRepo := repository.NewAdminRepository(db)
+	employeeRepo := repository.NewEmployeeRepository(db)
+
+	authService := service.NewAuthService(db, userRepo, adminRepo, employeeRepo)
 	authHandler := handler.NewAuthHandler(authService)
 
 	r := router.SetupRouter(authHandler)

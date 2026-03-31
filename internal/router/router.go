@@ -9,7 +9,6 @@ import (
 )
 
 func SetupRouter(authHandler *handler.AuthHandler) *gin.Engine {
-	log.Println("route terdaftar: /admin/register")
 	r := gin.Default()
 
 	auth := r.Group("/auth")

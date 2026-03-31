@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,9 +9,6 @@ import (
 func RoleGuard(roles ...string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		role, exists := ctx.Get("role")
-		log.Println("role dari context:", role)
-		log.Println("role exists:", exists)
-		log.Println("roles yang diizinkan:", roles)
 		if !exists {
 			ctx.JSON(http.StatusForbidden, gin.H{
 				"error": "Role doesn't found",
