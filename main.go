@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-	// load .env
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Failed connecting to .env")

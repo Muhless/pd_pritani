@@ -20,6 +20,12 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type RegisterRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Role     string `json:"role" binding:"required, oneof=admin employee"`
+}
+
 func (h *AuthHandler) Login(c *gin.Context) {
 	// accept the request
 	var req LoginRequest
@@ -40,5 +46,30 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
+	})
+}
+
+func (h *AuthHandler) Register(c *gin.Context) {
+	// receive request
+	var req RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// call service
+	err := h.authService.Register(req.Username, req.Password, req.Role)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// return
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "User data successfully created",
 	})
 }

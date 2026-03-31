@@ -1,48 +1,63 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
-	"pd_pritani/auth"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
+	return func(ctx *gin.Context) {
+		// 1. ambil token dari header
+		authHeader := ctx.GetHeader("Authorization")
+		log.Println("header:", authHeader)
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "Authorization header tidak ditemukan",
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"error": "Token not found",
 			})
-			c.Abort()
+			ctx.Abort()
 			return
 		}
 
-		// HARUS format: Bearer <token>
-		parts := strings.SplitN(authHeader, " ", 2)
+		// 2. cek format bearer token
+		parts := strings.Split(authHeader, " ")
+		log.Println("parts[0]:", parts[0])
+		log.Println("parts[0] == Bearer:", parts[0] == "Bearer")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "Format Authorization tidak valid",
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"error": "Format token not valid",
 			})
-			c.Abort()
+			ctx.Abort()
 			return
 		}
 
-		claims, err := auth.ValidateToken(parts[1])
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "Token tidak valid",
-				"error":   err.Error(),
+		// 3. validasi token
+		tokenSting := parts[1]
+		secret := os.Getenv("JWT_SECRET")
+		log.Println("secret di middleware:", secret)
+		token, err := jwt.Parse(tokenSting, func(token *jwt.Token) (interface{}, error) {
+			return []byte(secret), nil
+		})
+		log.Println("token valid:", token.Valid)
+		log.Println("parse error:", err)
+
+		if err != nil || token.Valid {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"error": "Token doesn't valid",
 			})
-			c.Abort()
+			ctx.Abort()
 			return
 		}
 
-		// Simpan ke context (bisa dipakai handler lain)
-		c.Set("user_id", claims.UserID)
-		c.Set("username", claims.Username)
+		claims, _ := token.Claims.(jwt.MapClaims)
+		ctx.Set("user_id", claims["user_id"])
+		ctx.Set("role", claims["role"])
 
-		c.Next()
+		log.Println("auth middleware lolos, lanjut ke handler")
+		ctx.Next()
 	}
 }
