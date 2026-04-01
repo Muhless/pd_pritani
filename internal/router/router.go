@@ -18,6 +18,8 @@ func SetupRouter(authHandler *handler.AuthHandler) *gin.Engine {
 
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware())
+	protected.GET("/profile", authHandler.GetProfile)
+	
 	{
 		admin := protected.Group("/admin")
 		admin.Use(middleware.RoleGuard("admin"))

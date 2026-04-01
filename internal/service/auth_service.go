@@ -16,6 +16,7 @@ import (
 type AuthService interface {
 	Login(username, password string) (string, error)
 	Register(username, password, role string) error
+	GetProfile(userID uint) (*model.User, error)
 }
 
 type authService struct {
@@ -110,4 +111,13 @@ func (s *authService) Register(username, password, role string) error {
 		}
 		return nil
 	})
+}
+
+func (s *authService) GetProfile(userID uint) (*model.User, error) {
+	user, err := s.userRepo.FindById(userID)
+	if err != nil {
+		return nil, errors.New("User not found")
+	}
+	return user, nil
+
 }

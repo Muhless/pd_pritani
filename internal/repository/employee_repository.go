@@ -8,6 +8,8 @@ import (
 
 type EmployeeRepository interface {
 	Create(employee *model.Employee) error
+	FindById(userID uint) (*model.Employee, error)
+	Update(employee *model.Employee) error
 }
 
 type employeeRepository struct {
@@ -20,4 +22,17 @@ func NewEmployeeRepository(db *gorm.DB) EmployeeRepository {
 
 func (r *employeeRepository) Create(employee *model.Employee) error {
 	return r.db.Create(employee).Error
+}
+
+func (r *employeeRepository) FindById(userID uint) (*model.Employee, error) {
+	var employee model.Employee
+	err := r.db.Where("user_id = ?", userID).First(&employee).Error
+	if err != nil {
+		return nil, err
+	}
+	return &employee, err
+}
+
+func (r *employeeRepository) Update(employee *model.Employee) error {
+	return r.db.Save(employee).Error
 }
