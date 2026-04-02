@@ -12,7 +12,6 @@ const (
 type Admin struct {
 	gorm.Model
 	UserID      uint   `json:"user_id" gorm:"uniqueIndex;not null"`
-	User        User   `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:onUpdate:CASCADE,onDelete:CASCADE"`
 	Permissions string `json:"permissions" gorm:"not null"`
 
 	Name    string      `json:"name"`

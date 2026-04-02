@@ -98,3 +98,52 @@ func (h *AuthHandler) GetProfile(c *gin.Context) {
 	})
 
 }
+
+func (h *AuthHandler) UpdateProfile(c *gin.Context) {
+	// get user profile from jwt
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "user not found",
+		})
+		return
+	}
+
+	id := uint(userID.(float64))
+
+	// bind request
+	var req service.UpdateProfileRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// 3. call service
+	err := h.authService.UpdateProfile(id, req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "profile updated",
+	})
+}
+
+func (h *AuthHandler) GetAllUsers(c *gin.Context) {
+	users, err := h.authService.GetAllUsers()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": users,
+	})
+
+}

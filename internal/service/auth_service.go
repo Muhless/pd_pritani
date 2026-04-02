@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+
 	"os"
 	"pd_pritani/internal/model"
 	"pd_pritani/internal/repository"
@@ -13,10 +14,23 @@ import (
 	"gorm.io/gorm"
 )
 
+type UpdateProfileRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	Address  string `json:"address"`
+	Photo    string `json:"photo"`
+	Status   string `json:"status"`
+}
+
 type AuthService interface {
 	Login(username, password string) (string, error)
 	Register(username, password, role string) error
 	GetProfile(userID uint) (*model.User, error)
+	UpdateProfile(userID uint, req UpdateProfileRequest) error
+	GetAllUsers() ([]model.User, error)
 }
 
 type authService struct {
@@ -119,5 +133,89 @@ func (s *authService) GetProfile(userID uint) (*model.User, error) {
 		return nil, errors.New("User not found")
 	}
 	return user, nil
+}
 
+func (s *authService) UpdateProfile(userID uint, req UpdateProfileRequest) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		// get user
+		user, err := s.userRepo.FindById(userID)
+		if err != nil {
+			return errors.New("User not found")
+		}
+
+		// update username if found
+		if req.Username != "" {
+			user.Username = req.Username
+		}
+
+		// update password if found
+		if req.Password != "" {
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+			if err != nil {
+				return errors.New("Failed hashing password")
+			}
+			user.Password = string(hashedPassword)
+		}
+
+		// save user
+		if err := tx.Save(user).Error; err != nil {
+			return errors.New("Update user data failed")
+		}
+
+		// update data by role
+		switch user.Role {
+		case "employee":
+			employee, err := s.employeeRepo.FindByUserId(userID)
+			if err != nil {
+				return errors.New("User employee not found")
+			}
+			if req.Name != "" {
+				employee.Name = req.Name
+			}
+			if req.Phone != "" {
+				employee.Phone = req.Phone
+			}
+			if req.Address != "" {
+				employee.Address = req.Address
+			}
+			if req.Photo != "" {
+				employee.Photo = req.Photo
+			}
+			if err := tx.Save(employee).Error; err != nil {
+				return errors.New("Update employee data failed")
+			}
+		case "admin":
+			admin, err := s.adminRepo.FindByUserID(userID)
+			if err != nil {
+				return errors.New("data admin not found")
+			}
+			if req.Name != "" {
+				admin.Name = req.Name
+			}
+			if req.Email != "" {
+				admin.Email = req.Email
+			}
+			if req.Phone != "" {
+				admin.Phone = req.Phone
+			}
+			if req.Address != "" {
+				admin.Address = req.Address
+			}
+			if req.Photo != "" {
+				admin.Photo = req.Photo
+			}
+			if err := tx.Save(admin).Error; err != nil {
+				return errors.New("Update admin data failed")
+			}
+		}
+		return nil
+	})
+}
+
+func (s *authService) GetAllUsers() ([]model.User, error) {
+	users, err := s.userRepo.FindAll()
+	if err != nil {
+		return nil, errors.New("Failed getting user data")
+	}
+	return users, nil
 }

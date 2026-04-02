@@ -8,7 +8,7 @@ import (
 
 type EmployeeRepository interface {
 	Create(employee *model.Employee) error
-	FindById(userID uint) (*model.Employee, error)
+	FindByUserId(userID uint) (*model.Employee, error)
 	Update(employee *model.Employee) error
 }
 
@@ -24,7 +24,7 @@ func (r *employeeRepository) Create(employee *model.Employee) error {
 	return r.db.Create(employee).Error
 }
 
-func (r *employeeRepository) FindById(userID uint) (*model.Employee, error) {
+func (r *employeeRepository) FindByUserId(userID uint) (*model.Employee, error) {
 	var employee model.Employee
 	err := r.db.Where("user_id = ?", userID).First(&employee).Error
 	if err != nil {

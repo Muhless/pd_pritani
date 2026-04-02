@@ -11,6 +11,7 @@ type UserRepository interface {
 	FindById(id uint) (*model.User, error)
 	Create(user *model.User) error
 	Update(user *model.User) error
+	FindAll() ([]model.User, error)
 }
 
 type userRepository struct {
@@ -47,4 +48,13 @@ func (r *userRepository) FindByUsername(username string) (*model.User, error) {
 func (r *userRepository) Update(user *model.User) error {
 	return r.db.Save(user).Error
 
+}
+
+func (r *userRepository) FindAll() ([]model.User, error) {
+	var users []model.User
+	err := r.db.Preload("Admin").Preload("Employee").Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
