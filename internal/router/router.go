@@ -26,6 +26,8 @@ func SetupRouter(authHandler *handler.AuthHandler) *gin.Engine {
 		{
 			admin.POST("/register", authHandler.Register)
 			admin.GET("/users", authHandler.GetAllUsers)
+			admin.GET("/users/:id", authHandler.GetUserByID)
+			admin.PATCH("/users/:id", authHandler.UpdateUser)
 		}
 	}
 	// for _, route := range r.Routes() {

@@ -31,6 +31,8 @@ type AuthService interface {
 	GetProfile(userID uint) (*model.User, error)
 	UpdateProfile(userID uint, req UpdateProfileRequest) error
 	GetAllUsers() ([]model.User, error)
+	GetUserByID(id uint) (*model.User, error)
+	UpdateUser(id uint, req UpdateProfileRequest) error
 }
 
 type authService struct {
@@ -218,4 +220,84 @@ func (s *authService) GetAllUsers() ([]model.User, error) {
 		return nil, errors.New("Failed getting user data")
 	}
 	return users, nil
+}
+
+func (s *authService) GetUserByID(id uint) (*model.User, error) {
+	user, err := s.userRepo.FindById(id)
+	if err != nil {
+		return nil, errors.New("User not found")
+	}
+	return user, nil
+}
+
+func (s *authService) UpdateUser(id uint, req UpdateProfileRequest) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		user, err := s.userRepo.FindById(id)
+		if err != nil {
+			return errors.New("User not found")
+		}
+
+		if req.Username != "" {
+			user.Username = req.Username
+		}
+
+		if req.Password != "" {
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+			if err != nil {
+				return errors.New("Failed hashing password")
+			}
+			user.Password = string(hashedPassword)
+		}
+
+		if err := tx.Save(user).Error; err != nil {
+			return errors.New("update user data failed")
+		}
+
+		switch user.Role {
+		case "employee":
+			employee, err := s.employeeRepo.FindByUserId(id)
+			if err != nil {
+				return errors.New("emploee data not found")
+			}
+			if req.Name != "" {
+				employee.Name = req.Name
+			}
+			if req.Phone != "" {
+				employee.Phone = req.Phone
+			}
+			if req.Address != "" {
+				employee.Address = req.Address
+			}
+			if req.Photo != "" {
+				employee.Photo = req.Photo
+			}
+			if err := tx.Save(employee).Error; err != nil {
+				return errors.New("failed to update employee data")
+			}
+		case "admin":
+			admin, err := s.adminRepo.FindByUserID(id)
+			if err != nil {
+				return errors.New("admin data not found")
+			}
+			if req.Name != "" {
+				admin.Name = req.Name
+			}
+			if req.Email != "" {
+				admin.Email = req.Email
+			}
+			if req.Phone != "" {
+				admin.Phone = req.Phone
+			}
+			if req.Address != "" {
+				admin.Address = req.Address
+			}
+			if req.Photo != "" {
+				admin.Photo = req.Photo
+			}
+			if err := tx.Save(admin).Error; err != nil {
+				return errors.New("failed to update admin data")
+			}
+		}
+		return nil
+	})
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"pd_pritani/internal/service"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -144,6 +145,63 @@ func (h *AuthHandler) GetAllUsers(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"data": users,
+	})
+
+}
+
+func (h *AuthHandler) GetUserByID(c *gin.Context) {
+	// get id from url
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "id doesn't valid",
+		})
+		return
+	}
+
+	// call service
+	user, err := h.authService.GetUserByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": user,
+	})
+}
+
+func (H *AuthHandler) UpdateUser(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "id doesn't valid",
+		})
+		return
+	}
+
+	var req service.UpdateProfileRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = H.authService.UpdateUser(uint(id), req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+		"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+	"message":"profile updated successfully",
 	})
 
 }
