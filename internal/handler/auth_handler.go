@@ -174,7 +174,7 @@ func (h *AuthHandler) GetUserByID(c *gin.Context) {
 	})
 }
 
-func (H *AuthHandler) UpdateUser(c *gin.Context) {
+func (h *AuthHandler) UpdateUser(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
@@ -192,16 +192,39 @@ func (H *AuthHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	err = H.authService.UpdateUser(uint(id), req)
+	err = h.authService.UpdateUser(uint(id), req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-		"error": err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-	"message":"profile updated successfully",
+		"message": "profile updated successfully",
 	})
 
+}
+
+func (h *AuthHandler) DeleteUser(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "id not valid",
+		})
+		return
+	}
+
+	err = h.authService.DeleteUser(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "user deleted",
+	})
 }

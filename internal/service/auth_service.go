@@ -33,6 +33,7 @@ type AuthService interface {
 	GetAllUsers() ([]model.User, error)
 	GetUserByID(id uint) (*model.User, error)
 	UpdateUser(id uint, req UpdateProfileRequest) error
+	DeleteUser(id uint) error
 }
 
 type authService struct {
@@ -300,4 +301,12 @@ func (s *authService) UpdateUser(id uint, req UpdateProfileRequest) error {
 		}
 		return nil
 	})
+}
+
+func (s *authService) DeleteUser(id uint) error {
+	_, err := s.userRepo.FindById(id)
+	if err != nil {
+		return errors.New("user not found")
+	}
+	return s.userRepo.DeleteUser(id)
 }

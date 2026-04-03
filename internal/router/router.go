@@ -28,10 +28,14 @@ func SetupRouter(authHandler *handler.AuthHandler) *gin.Engine {
 			admin.GET("/users", authHandler.GetAllUsers)
 			admin.GET("/users/:id", authHandler.GetUserByID)
 			admin.PATCH("/users/:id", authHandler.UpdateUser)
+			admin.DELETE("/users/:id", authHandler.DeleteUser)
 		}
 	}
+
+	// for check route
 	// for _, route := range r.Routes() {
 	// 	log.Println(route.Method, route.Path)
 	// }
+
 	return r
 }
