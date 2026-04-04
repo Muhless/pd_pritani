@@ -19,14 +19,22 @@ func main() {
 
 	db := config.ConnectDB()
 
+
+	// user
 	userRepo := repository.NewUserRepository(db)
 	adminRepo := repository.NewAdminRepository(db)
 	employeeRepo := repository.NewEmployeeRepository(db)
-
+	
 	authService := service.NewAuthService(db, userRepo, adminRepo, employeeRepo)
 	authHandler := handler.NewAuthHandler(authService)
+	
 
-	r := router.SetupRouter(authHandler)
+	// customer
+	customerRepo := repository.NewCustomerRepository(db)
+	customerService := service.NewCustomerService(customerRepo)
+	customerHandler := handler.NewCustomerHandler(customerService)
+
+	r := router.SetupRouter(authHandler, customerHandler)
 
 	r.Run(":8080")
 }

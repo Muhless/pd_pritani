@@ -1,10 +1,11 @@
-CREATE TABLE
-          IF NOT EXISTS customers (
-                    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                    name VARCHAR(30) NOT NULL,
-                    phone VARCHAR(12) NOT NULL UNIQUE,
-                    address TEXT,
-                    company VARCHAR(30),
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-          )
+CREATE TABLE IF NOT EXISTS customers (
+          id BIGSERIAL PRIMARY KEY,
+          name VARCHAR(50) NOT NULL,
+          company_name VARCHAR(50),
+          phone VARCHAR(15) NOT NULL UNIQUE,
+          email VARCHAR(30) UNIQUE,
+          address TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          deleted_at TIMESTAMP DEFAULT NULL
+)

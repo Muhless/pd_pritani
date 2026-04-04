@@ -1,15 +1,16 @@
 package model
 
-import "time"
+import (
+	"gorm.io/gorm"
+)
 
 type Customer struct {
-	ID        uint      `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name      string    `json:"name"`
-	Phone     string    `json:"phone"`
-	Address   string    `json:"address"`
-	Company   string    `json:"company"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	gorm.Model
+	Name        string `json:"name"`
+	CompanyName string `json:"company_name"`
+	Email       string `json:"email" gorm:"unique"`
+	Phone       string `json:"phone" gorm:"unique"`
+	Address     string `json:"address"`
 
 	Sales []Sales `json:"sales,omitempty" gorm:"foreignKey:CustomerID"`
 }

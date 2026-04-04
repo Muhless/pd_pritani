@@ -7,7 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(authHandler *handler.AuthHandler) *gin.Engine {
+func SetupRouter(
+	authHandler *handler.AuthHandler,
+	customerHandler *handler.CustomerHandler) *gin.Engine {
+
 	r := gin.Default()
 
 	auth := r.Group("/auth")
@@ -30,6 +33,15 @@ func SetupRouter(authHandler *handler.AuthHandler) *gin.Engine {
 			admin.PATCH("/users/:id", authHandler.UpdateUser)
 			admin.DELETE("/users/:id", authHandler.DeleteUser)
 		}
+	}
+
+	customer := protected.Group("/customers")
+	{
+		customer.GET("/", customerHandler.GetAll)
+		customer.GET("/:id", customerHandler.GetByID)
+		customer.POST("/", customerHandler.Create)
+		customer.PATCH("/", customerHandler.Update)
+		customer.DELETE("/", customerHandler.Delete)
 	}
 
 	// for check route
