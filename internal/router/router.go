@@ -40,8 +40,8 @@ func SetupRouter(
 		customer.GET("/", customerHandler.GetAll)
 		customer.GET("/:id", customerHandler.GetByID)
 		customer.POST("/", customerHandler.Create)
-		customer.PATCH("/", customerHandler.Update)
-		customer.DELETE("/", customerHandler.Delete)
+		customer.PATCH("/:id", customerHandler.Update)
+		customer.DELETE("/:id", customerHandler.Delete)
 	}
 
 	// for check route

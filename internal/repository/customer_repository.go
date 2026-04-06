@@ -28,7 +28,7 @@ func (r *customerRepository) FindAll() ([]model.Customer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, err
+	return customers, err
 }
 
 func (r *customerRepository) FindByID(id uint) (*model.Customer, error) {

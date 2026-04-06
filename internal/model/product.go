@@ -1,26 +1,24 @@
 package model
 
 import (
-	"time"
-
 	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
+)
+
+type ProductCategory string
+
+const (
+	ProductCategoryRice ProductCategory = "rice"
+	ProductCategoryMusk ProductCategory = "bran"
 )
 
 type Product struct {
-	ID        uint            `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name      string          `json:"name" gorm:"not null"`
-	Photo     string          `json:"photo"`
-	Type      string          `json:"type"`
-	Stock     int             `json:"stock" gorm:"default:0"`
-	Price     decimal.Decimal `json:"price" gorm:"type:numeric(12,2);not null"`
-	CreatedAt time.Time       `json:"created_at"`
-	UpdatedAt time.Time       `json:"updated_at"`
-}
-
-type UpdateProductInput struct {
-	Name  *string `json:"name"`
-	Type  *string `json:"type"`
-	Stock *int    `json:"stock"`
-	Price *int    `json:"price"`
-	Photo *string `json:"photo"`
+	gorm.Model
+	Name        string          `json:"name" gorm:"not null"`
+	Category    ProductCategory `json:"category" gorm:"type:product_category;default:'rice'"`
+	Stock       decimal.Decimal `json:"stock" gorm:"default:0"`
+	Unit        string          `json:"unit" gorm:"type:varchar(20); not null"`
+	Price       decimal.Decimal `json:"price" gorm:"type:numeric(12,2);not null"`
+	Photo       string          `json:"photo"`
+	Description string          `json:"description" gorm:"type:text"`
 }
