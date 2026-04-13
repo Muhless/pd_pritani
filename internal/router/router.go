@@ -10,7 +10,8 @@ import (
 func SetupRouter(
 	authHandler *handler.AuthHandler,
 	customerHandler *handler.CustomerHandler,
-	productHandler *handler.ProductHandler) *gin.Engine {
+	productHandler *handler.ProductHandler,
+	salesHandler *handler.SalesHandler) *gin.Engine {
 
 	r := gin.Default()
 
@@ -52,6 +53,15 @@ func SetupRouter(
 		products.POST("/", productHandler.Create)
 		products.PATCH("/:id", productHandler.Update)
 		products.DELETE("/:id", productHandler.Delete)
+	}
+
+	sales := protected.Group("/sales")
+	{
+		sales.GET("/", salesHandler.GetAll)
+		sales.GET("/:id", salesHandler.GetByID)
+		sales.POST("/", salesHandler.Create)
+		sales.PATCH("/:id", salesHandler.UpdateStatus)
+		sales.DELETE("/:id", salesHandler.Delete)
 	}
 
 	// for check route

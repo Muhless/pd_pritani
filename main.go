@@ -37,7 +37,12 @@ func main() {
 	productService := service.NewProductService(productRepo)
 	productHandler := handler.NewProductHandler(productService)
 
-	r := router.SetupRouter(authHandler, customerHandler, productHandler)
+	// sales
+	salesRepo := repository.NewSalesRepository(db)
+	salesService := service.NewSalesService(db, salesRepo, productRepo, employeeRepo)
+	salesHandler := handler.NewSalesHandler(salesService)
+
+	r := router.SetupRouter(authHandler, customerHandler, productHandler, salesHandler)
 
 	r.Run(":8080")
 }
