@@ -1,31 +1,28 @@
 package model
 
 import (
-	"time"
-
 	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 )
 
 type SalesStatus string
 
 const (
-	StatusUnpaid    SalesStatus = "unpaid"
-	StatusPartial   SalesStatus = "partial"
-	StatusPaid      SalesStatus = "paid"
-	StatusCancelled SalesStatus = "cancelled"
+	SalesStatusPending   SalesStatus = "pending"
+	SalesStatusPaid      SalesStatus = "paid"
+	SalesStatusCancelled SalesStatus = "cancelled"
 )
 
 type Sales struct {
-	ID         uint     `json:"id" gorm:"primaryKey;autoIncrement"`
-	CustomerID uint     `json:"customer_id" gorm:"not null"`
-	Customer   Customer `json:"customer" gorm:"foreignKey:CustomerID"`
+	gorm.Model
+	InvoiceNumber string          `json:"invoice_number" gorm:"type:varchar(50);not null;unique"`
+	EmployeeID    uint            `json:"employee_id" gorm:"not null"`
+	CustomerID    uint            `json:"customer_id" gorm:"not null"`
+	TotalPrice    decimal.Decimal `json:"total_price" gorm:"type:numeric(12,2); not null"`
+	Status        SalesStatus     `json:"status" gorm:"type:varchar(20);not null;default:'pending'"`
+	Notes         string          `json:"notes" gorm:"type:text"`
 
-	SalesDate       time.Time       `json:"sales_date"`
-	TotalAmount     decimal.Decimal `json:"total_amount"`
-	PaidAmount      decimal.Decimal `json:"paid_amount"`
-	RemainingAmount decimal.Decimal `json:"remaining_amount"`
-	Status          SalesStatus     `json:"status"`	
-	Note            string          `json:"note"`
-	CreatedAt       time.Time       `json:"created_at"`
-	UpdatedAt       time.Time       `json:"updated_at"`
+	Employee   *Employee    `json:"employee" gorm:"foreignKey:EmployeeID"`
+	Customer   *Customer    `json:"customer,omitempty" gorm:"foreignKey:CustomerID"`
+	SalesItems []SalesItems `json:"sales_items" gorm:"foreignKey:SalesID"`
 }

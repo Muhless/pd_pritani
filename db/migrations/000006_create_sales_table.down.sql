@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS sales;
+DROP TYPE IF EXISTS sales_status;

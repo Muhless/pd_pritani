@@ -1,17 +1,21 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
+)
 
 type SalesItems struct {
-	ID      uint  `json:"id" gorm:"primaryKey;autoIncrement"`
-	SalesID uint  `json:"sales_id" gorm:"not null"`
-	Sales   Sales `json:"sales" gorm:"foreignKey:SalesID"`
+	gorm.Model
+	SalesID   uint            `json:"sales_id" gorm:"not null"`
+	ProductID uint            `json:"product_id" gorm:"not null"`
+	Quantity  decimal.Decimal `json:"quantity" gorm:"type:numeric(12,2);not null"`
+	Price     decimal.Decimal `json:"price" gorm:"type:numeric:(12,2);not null"`
+	Subtotal  decimal.Decimal `json:"subtotal" gorm:"type:numeric(12,2);not null"`
 
-	ProductID uint    `json:"product_id" gorm:"not null"`
-	Product   Product `json:"product" gorm:"foreignKey:ProductID"`
-
-	Quantity int `json:"quantity" gorm:"default:0"`
-	Subtotal int `json:"subtotal" gorm:"default:0"`
+	Product *Product `json:"product,omitempty" gorm:"foreignKey:ProductID"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
