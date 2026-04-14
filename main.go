@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"pd_pritani/internal/config"
 	"pd_pritani/internal/handler"
 	"pd_pritani/internal/repository"
@@ -12,10 +11,7 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Failed connecting to .env")
-	}
+	godotenv.Load()
 
 	db := config.ConnectDB()
 
