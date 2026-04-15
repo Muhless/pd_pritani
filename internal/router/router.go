@@ -18,6 +18,7 @@ func SetupRouter(
 	auth := r.Group("/auth")
 	{
 		auth.POST("/login", authHandler.Login)
+		auth.POST("/register", authHandler.Register)
 	}
 
 	protected := r.Group("/")
@@ -29,7 +30,6 @@ func SetupRouter(
 		admin := protected.Group("/admin")
 		admin.Use(middleware.RoleGuard("admin"))
 		{
-			admin.POST("/register", authHandler.Register)
 			admin.GET("/users", authHandler.GetAllUsers)
 			admin.GET("/users/:id", authHandler.GetUserByID)
 			admin.PATCH("/users/:id", authHandler.UpdateUser)
