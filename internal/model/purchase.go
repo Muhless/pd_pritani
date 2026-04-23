@@ -15,9 +15,9 @@ const (
 
 type Purchase struct {
 	gorm.Model
-	POnumber   string          `json:"po_number" gorm:"type:varchar(50);not null;unique"`
-	AdminID    uint            `json:"admin_id" gorm:"not null"`
-	SupllierID uint            `json:"supplier_id" gorm:"not null"`
+	PONumber   string          `json:"po_number" gorm:"type:varchar(50);not null;unique"`
+	EmployeeID uint            `json:"admin_id" gorm:"not null"`
+	SupplierID uint            `json:"supplier_id" gorm:"not null"`
 	TotalPrice decimal.Decimal `json:"total_price" gorm:"type:numeric(12,2);not null"`
 	Status     PurchaseStatus  `json:"status" gorm:"varchar(20);not null;default:'pending'"`
 	Notes      string          `json:"notes" gorm:"type:text"`
