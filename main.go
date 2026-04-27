@@ -1,3 +1,11 @@
+// @title 			PG Pritani API
+// version 			1.0
+// @description			API for PG Pritani dashboard
+// @host				localhost:8080
+// @BasePath			/
+// @securityDefinitions.apikey 	BearerAuth
+// @in Header
+// @name Authorization
 package main
 
 import (

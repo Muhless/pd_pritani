@@ -5,6 +5,11 @@ import (
 	"pd_pritani/internal/middleware"
 
 	"github.com/gin-gonic/gin"
+
+	_ "pd_pritani/docs"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func SetupRouter(
@@ -17,6 +22,7 @@ func SetupRouter(
 ) *gin.Engine {
 
 	r := gin.Default()
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	auth := r.Group("/auth")
 	{

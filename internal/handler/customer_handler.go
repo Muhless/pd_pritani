@@ -16,6 +16,17 @@ func NewCustomerHandler(customerService service.CustomerService) *CustomerHandle
 	return &CustomerHandler{customerService}
 }
 
+// @Summary      Get customer data
+// @Description  get all customer data
+// @Tags         Customers
+// @Accept       json
+// @Produce      json
+// @Param        page   query  int  false  "Halaman"
+// @Param        limit  query  int  false  "Limit data"
+// @Success      200  {object}  helper.PaginationResponse
+// @Failure      500  {object}  helper.Response
+// @Security     BearerAuth
+// @Router       /customers/ [get]
 func (h *CustomerHandler) GetAll(c *gin.Context) {
 	customers, err := h.customerService.GetAll()
 	if err != nil {

@@ -27,6 +27,16 @@ type RegisterRequest struct {
 	Role     string `json:"role" binding:"required,oneof=admin employee"`
 }
 
+// @Summary      Login
+// @Description  Login user dengan username dan password
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        request  body  handler.LoginRequest  true  "Login data"
+// @Success      200  {object}  helper.Response
+// @Failure      400  {object}  helper.Response
+// @Failure      401  {object}  helper.Response
+// @Router       /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	// accept the request
 	var req LoginRequest
@@ -50,6 +60,16 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	})
 }
 
+// @Summary      Register
+// @Description  Register user baru
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        request  body  handler.RegisterRequest  true  "Register data"
+// @Success      201  {object}  helper.Response
+// @Failure      400  {object}  helper.Response
+// @Security     BearerAuth
+// @Router       /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	// receive request
 	var req RegisterRequest
@@ -75,6 +95,14 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	})
 }
 
+// @Summary      Get Profile
+// @Description  Ambil data profile user yang sedang login
+// @Tags         Auth
+// @Produce      json
+// @Success      200  {object}  helper.Response
+// @Failure      401  {object}  helper.Response
+// @Security     BearerAuth
+// @Router       /profile [get]
 func (h *AuthHandler) GetProfile(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {
@@ -100,6 +128,16 @@ func (h *AuthHandler) GetProfile(c *gin.Context) {
 
 }
 
+// @Summary      Update Profile
+// @Description  Update data profile user yang sedang login
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        request  body  service.UpdateProfileRequest  true  "Update data"
+// @Success      200  {object}  helper.Response
+// @Failure      400  {object}  helper.Response
+// @Security     BearerAuth
+// @Router       /profile [patch]
 func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 	// get user profile from jwt
 	userID, exists := c.Get("user_id")

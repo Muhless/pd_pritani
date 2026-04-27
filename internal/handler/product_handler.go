@@ -17,6 +17,17 @@ func NewProductHandler(productService service.ProductService) *ProductHandler {
 	return &ProductHandler{productService}
 }
 
+// @Summary      List semua produk
+// @Description  Mengambil semua data produk dengan pagination
+// @Tags         Products
+// @Accept       json
+// @Produce      json
+// @Param        page   query  int  false  "Halaman"
+// @Param        limit  query  int  false  "Limit data"
+// @Success      200  {object}  helper.PaginationResponse
+// @Failure      500  {object}  helper.Response
+// @Security     BearerAuth
+// @Router       /products/ [get]
 func (h *ProductHandler) GetAll(ctx *gin.Context) {
 	page, limit := helper.GetPagination(ctx)
 	products, total, err := h.productService.GetAll(page, limit)
@@ -44,6 +55,16 @@ func (h *ProductHandler) GetByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": product})
 }
 
+// @Summary      Buat produk baru
+// @Description  Membuat produk baru
+// @Tags         Products
+// @Accept       json
+// @Produce      json
+// @Param        request  body  service.ProductRequest  true  "Product data"
+// @Success      201  {object}  helper.Response
+// @Failure      400  {object}  helper.Response
+// @Security     BearerAuth
+// @Router       /products/ [post]
 func (h *ProductHandler) Create(ctx *gin.Context) {
 	var req service.ProductRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
