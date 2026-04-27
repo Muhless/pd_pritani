@@ -29,7 +29,7 @@ type ProductUpdateRequest struct {
 }
 
 type ProductService interface {
-	GetAll() ([]model.Product, error)
+	GetAll(page, limit int) ([]model.Product, int64, error)
 	GetByID(id uint) (*model.Product, error)
 	Create(req ProductRequest) error
 	Update(id uint, req ProductUpdateRequest) error
@@ -44,12 +44,12 @@ func NewProductService(productRepo repository.ProductRepository) ProductService 
 	return &productService{productRepo}
 }
 
-func (s *productService) GetAll() ([]model.Product, error) {
-	products, err := s.productRepo.FindAll()
+func (s *productService) GetAll(page, limit int) ([]model.Product, int64, error) {
+	products, total, err := s.productRepo.FindAll(page, limit)
 	if err != nil {
-		return nil, errors.New("failed")
+		return nil, 0, errors.New("failed")
 	}
-	return products, nil
+	return products, total, nil
 }
 
 func (s *productService) GetByID(id uint) (*model.Product, error) {

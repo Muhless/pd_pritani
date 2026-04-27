@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS supliers (
+CREATE TABLE IF NOT EXISTS suppliers (
           id BIGSERIAL PRIMARY KEY,
           name VARCHAR(50) NOT NULL,
           phone VARCHAR(15) NOT NULL,

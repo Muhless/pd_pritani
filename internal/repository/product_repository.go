@@ -7,7 +7,7 @@ import (
 )
 
 type ProductRepository interface {
-	FindAll() ([]model.Product, error)
+	FindAll(page, limit int) ([]model.Product, int64, error)
 	FindByID(id uint) (*model.Product, error)
 	Create(product *model.Product) error
 	Update(product *model.Product) error
@@ -22,13 +22,20 @@ func NewProductRepository(db *gorm.DB) ProductRepository {
 	return &productRepository{db}
 }
 
-func (r *productRepository) FindAll() ([]model.Product, error) {
+func (r *productRepository) FindAll(page, limit int) ([]model.Product, int64, error) {
 	var products []model.Product
-	err := r.db.Find(&products).Error
+	var total int64
+
+	offset := (page - 1) * limit
+
+	// count total data
+	r.db.Model(&model.Product{}).Count(&total)
+	// get data with pagination
+	err := r.db.Offset(offset).Limit(limit).Find(&products).Error
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return products, nil
+	return products, total, nil
 }
 
 func (r *productRepository) FindByID(id uint) (*model.Product, error) {

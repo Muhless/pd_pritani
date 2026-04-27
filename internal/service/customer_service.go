@@ -4,6 +4,7 @@ import (
 	"errors"
 	"pd_pritani/internal/model"
 	"pd_pritani/internal/repository"
+	"strings"
 )
 
 type CustomerRequest struct {
@@ -55,7 +56,15 @@ func (s *customerService) Create(req CustomerRequest) error {
 		Phone:       req.Phone,
 		Address:     req.Address,
 	}
-	return s.customerRepo.Create(customer)
+
+	err := s.customerRepo.Create(customer)
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key") {
+			return errors.New("phone number already used")
+		}
+		return errors.New("failed")
+	}
+	return nil
 }
 
 func (s *customerService) Update(id uint, req CustomerRequest) error {
