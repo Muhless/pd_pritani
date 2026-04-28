@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"pd_pritani/internal/helper"
 	"pd_pritani/internal/service"
 	"strconv"
 
@@ -28,16 +29,16 @@ func NewCustomerHandler(customerService service.CustomerService) *CustomerHandle
 // @Security     BearerAuth
 // @Router       /customers/ [get]
 func (h *CustomerHandler) GetAll(c *gin.Context) {
-	customers, err := h.customerService.GetAll()
+	page, limit := helper.GetPagination(c)
+	customers, total, err := h.customerService.GetAll(page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"data": customers,
-	})
+	meta := helper.NewPagination(page, limit, total)
+	helper.SuccessWithPagination(c, http.StatusOK, "successfull", customers, meta)
 }
 
 func (h *CustomerHandler) GetByID(C *gin.Context) {

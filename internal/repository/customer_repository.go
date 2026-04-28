@@ -7,7 +7,7 @@ import (
 )
 
 type CustomerRepository interface {
-	FindAll() ([]model.Customer, error)
+	FindAll(page, limit int) ([]model.Customer, int64, error)
 	FindByID(id uint) (*model.Customer, error)
 	Create(customer *model.Customer) error
 	Update(customer *model.Customer) error
@@ -22,13 +22,19 @@ func NewCustomerRepository(db *gorm.DB) CustomerRepository {
 	return &customerRepository{db}
 }
 
-func (r *customerRepository) FindAll() ([]model.Customer, error) {
+func (r *customerRepository) FindAll(page,limit int) ([]model.Customer, int64, error) {
 	var customers []model.Customer
-	err := r.db.Find(&customers).Error
+	var total int64
+
+	offset := (page-1) * limit
+
+	r.db.Model(&model.Customer{}).Count(&total)
+
+	err := r.db.Offset(offset).Limit(limit).Find(&customers).Error
 	if err != nil {
-		return nil, err
+		return nil,0, err
 	}
-	return customers, err
+	return customers, total, err
 }
 
 func (r *customerRepository) FindByID(id uint) (*model.Customer, error) {

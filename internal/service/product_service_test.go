@@ -80,7 +80,7 @@ func TestGetProductByID_NotFound(t *testing.T) {
 }
 
 // create
-func TestCreateProduct_SUccess(t *testing.T) {
+func TestCreateProduct_Success(t *testing.T) {
 	mockRepo := new(repoMock.MockProductRepository)
 	mockRepo.On("Create", mock.AnythingOfType("*model.Product")).Return(nil)
 

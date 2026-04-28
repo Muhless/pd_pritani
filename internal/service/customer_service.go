@@ -16,7 +16,7 @@ type CustomerRequest struct {
 }
 
 type CustomerService interface {
-	GetAll() ([]model.Customer, error)
+	GetAll(page, limit int) ([]model.Customer, int64, error)
 	GetByID(id uint) (*model.Customer, error)
 	Create(req CustomerRequest) error
 	Update(id uint, req CustomerRequest) error
@@ -31,21 +31,22 @@ func NewCustomerService(customerRepo repository.CustomerRepository) CustomerServ
 	return &customerService{customerRepo}
 }
 
+func (s *customerService) GetAll(page, limit int) ([]model.Customer, int64, error) {
+	customers, total, err := s.customerRepo.FindAll(page, limit)
+
+	if err != nil {
+		return nil, 0, errors.New("failed getting customer data")
+	}
+	return customers, total, nil
+}
+
 func (s *customerService) GetByID(id uint) (*model.Customer, error) {
 	customer, err := s.customerRepo.FindByID(id)
 	if err != nil {
-		return nil, errors.New("customer nout found")
+		return nil, errors.New("customer not found")
 	}
 	return customer, nil
 
-}
-
-func (s *customerService) GetAll() ([]model.Customer, error) {
-	customers, err := s.customerRepo.FindAll()
-	if err != nil {
-		return nil, errors.New("failed getting customer data")
-	}
-	return customers, nil
 }
 
 func (s *customerService) Create(req CustomerRequest) error {
