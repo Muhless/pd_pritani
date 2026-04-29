@@ -7,7 +7,7 @@ import (
 )
 
 type SupplierRepository interface {
-	FindAll() ([]model.Supplier, error)
+	FindAll(page, limit int) ([]model.Supplier, int64, error)
 	FindByID(id uint) (*model.Supplier, error)
 	Create(supplier *model.Supplier) error
 	Update(supplier *model.Supplier) error
@@ -22,10 +22,19 @@ func NewSupplierRepository(db *gorm.DB) SupplierRepository {
 	return &supplierRepository{db}
 }
 
-func (r *supplierRepository) FindAll() ([]model.Supplier, error) {
+func (r *supplierRepository) FindAll(page, limit int) ([]model.Supplier, int64, error) {
 	var suppliers []model.Supplier
-	err := r.db.Find(&suppliers).Error
-	return suppliers, err
+	var total int64
+
+	offset := (page - 1) * limit
+	r.db.Model(&model.Supplier{}).Count(&total)
+
+	err := r.db.Offset(offset).Limit(limit).Find(&suppliers).Error
+	if err != nil {
+		return nil, 0, err
+
+	}
+	return suppliers, total, err
 }
 
 func (r *supplierRepository) FindByID(id uint) (*model.Supplier, error) {

@@ -1,13 +1,14 @@
 package service
 
 import (
+	"errors"
 	"pd_pritani/internal/dto"
 	"pd_pritani/internal/model"
 	"pd_pritani/internal/repository"
 )
 
 type SupplierService interface {
-	GetAll() ([]model.Supplier, error)
+	GetAll(page, limit int) ([]model.Supplier, int64, error)
 	GetByID(id uint) (*model.Supplier, error)
 	Create(req dto.CreateSupplierRequest) (*model.Supplier, error)
 	Update(id uint, req dto.UpdateSupplierRequest) (*model.Supplier, error)
@@ -22,8 +23,12 @@ func NewSupplierService(repo repository.SupplierRepository) SupplierService {
 	return &supplierService{repo}
 }
 
-func (s *supplierService) GetAll() ([]model.Supplier, error) {
-	return s.repo.FindAll()
+func (s *supplierService) GetAll(page, limit int) ([]model.Supplier, int64, error) {
+	suppliers, total, err := s.repo.FindAll(page, limit)
+	if err != nil {
+		return nil, 0, errors.New("failed")
+	}
+	return suppliers, total, nil
 }
 
 func (s *supplierService) GetByID(id uint) (*model.Supplier, error) {
