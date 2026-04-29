@@ -24,12 +24,12 @@ func (m *MockPurchaseRepository) FindByID(id uint) (*model.Purchase, error) {
 
 }
 
-func (m *MockPurchaseRepository) Create(purchase *model.Purchase) error {
-	args := m.Called(purchase)
+func (m *MockPurchaseRepository) Create(purchase *model.Purchase, items []model.PurchaseItem) error {
+	args := m.Called(purchase,items)
 	return args.Error(0)
 }
 
-func (m *MockPurchaseRepository) Update(purchase *model.Purchase) error {
+func (m *MockPurchaseRepository) UpdateStatus(purchase *model.Purchase) error {
 	args := m.Called(purchase)
 	return args.Error(0)
 }

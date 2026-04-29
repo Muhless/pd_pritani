@@ -2,9 +2,10 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"pd_pritani/internal/helper"
 
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -21,9 +22,9 @@ func ConnectDB() *gorm.DB {
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Failed connect to database", err)
+		helper.Log.Fatal("failed connect to database", zap.Error(err))
 	}
 
-	log.Println("Database successfully connected")
+	helper.Log.Info("database successfully connected")
 	return db
 }

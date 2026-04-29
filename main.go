@@ -11,6 +11,7 @@ package main
 import (
 	"pd_pritani/internal/config"
 	"pd_pritani/internal/handler"
+	"pd_pritani/internal/helper"
 	"pd_pritani/internal/repository"
 	"pd_pritani/internal/router"
 	"pd_pritani/internal/service"
@@ -20,6 +21,11 @@ import (
 
 func main() {
 	godotenv.Load()
+
+	// init logger
+	helper.InitLogger()
+	defer helper.Log.Sync()
+	helper.Log.Info("starting application")
 
 	db := config.ConnectDB()
 
