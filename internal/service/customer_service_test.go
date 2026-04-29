@@ -57,7 +57,7 @@ func TestGetCustomerByID_Success(t *testing.T) {
 	mockRepo.AssertExpectations(t)
 }
 
-func TestGetCustomerByID_NOtFound(t *testing.T) {
+func TestGetCustomerByID_NotFound(t *testing.T) {
 	mockRepo := new(repoMock.MockCustomerRepository)
 	mockRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
 

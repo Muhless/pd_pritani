@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"pd_pritani/internal/dto"
+	"pd_pritani/internal/helper"
 	"pd_pritani/internal/service"
 	"strconv"
 
@@ -18,12 +19,16 @@ func NewPurchaseHandler(service service.PurchaseService) *PurchaseHandler {
 }
 
 func (h *PurchaseHandler) GetAll(ctx *gin.Context) {
-	purchases, err := h.service.GetAll()
+	page, limit := helper.GetPagination(ctx)
+
+	purchases, total, err := h.service.GetAll(page, limit)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"data": purchases})
+	meta := helper.NewPagination(page, limit, total)
+	helper.SuccessWithPagination(ctx, http.StatusOK, "successfull", purchases, meta)
 }
 
 func (h *PurchaseHandler) GetByID(ctx *gin.Context) {

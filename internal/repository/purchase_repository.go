@@ -7,9 +7,9 @@ import (
 )
 
 type PurchaseRepository interface {
-	FindAll() ([]model.Purchase, error)
+	FindAll(page, limit int) ([]model.Purchase, int64, error)
 	FindByID(id uint) (*model.Purchase, error)
-	Create(purchase *model.Purchase, items []model.PurchaseItems) error
+	Create(purchase *model.Purchase, items []model.PurchaseItem) error
 	UpdateStatus(purchase *model.Purchase) error
 	Delete(id uint) error
 }
@@ -22,10 +22,18 @@ func NewPurchaseRepository(db *gorm.DB) PurchaseRepository {
 	return &purchaseRepository{db}
 }
 
-func (r *purchaseRepository) FindAll() ([]model.Purchase, error) {
+func (r *purchaseRepository) FindAll(page, limit int) ([]model.Purchase, int64, error) {
 	var purchases []model.Purchase
-	err := r.db.Find(purchases).Error
-	return purchases, err
+	var total int64
+
+	offset := (page - 1) * limit
+	r.db.Model(&model.Purchase{}).Count(&total)
+
+	err := r.db.Offset(offset).Limit(limit).Find(purchases).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	return purchases, total, err
 }
 
 func (r *purchaseRepository) FindByID(id uint) (*model.Purchase, error) {
@@ -34,7 +42,7 @@ func (r *purchaseRepository) FindByID(id uint) (*model.Purchase, error) {
 	return &purchase, err
 }
 
-func (r *purchaseRepository) Create(purchase *model.Purchase, items []model.PurchaseItems) error {
+func (r *purchaseRepository) Create(purchase *model.Purchase, items []model.PurchaseItem) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(purchase).Error; err != nil {
 			return err
@@ -52,7 +60,7 @@ func (r *purchaseRepository) UpdateStatus(purchase *model.Purchase) error {
 
 func (r *purchaseRepository) Delete(id uint) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("purchase_id=?", id).Delete(&model.PurchaseItems{}).Error; err != nil {
+		if err := tx.Where("purchase_id=?", id).Delete(&model.PurchaseItem{}).Error; err != nil {
 			return err
 		}
 		return tx.Delete(&model.Purchase{}, id).Error

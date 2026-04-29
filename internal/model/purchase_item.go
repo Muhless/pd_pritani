@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type PurchaseItems struct {
+type PurchaseItem struct {
 	gorm.Model
 	PurchaseID uint            `json:"purchase_id" gorm:"not null"`
 	ProductID  uint            `json:"product_id" gorm:"not null"`

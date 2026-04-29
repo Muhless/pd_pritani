@@ -19,10 +19,10 @@ type Purchase struct {
 	EmployeeID uint            `json:"admin_id" gorm:"not null"`
 	SupplierID uint            `json:"supplier_id" gorm:"not null"`
 	TotalPrice decimal.Decimal `json:"total_price" gorm:"type:numeric(12,2);not null"`
-	Status     PurchaseStatus  `json:"status" gorm:"varchar(20);not null;default:'pending'"`
+	Status     PurchaseStatus  `json:"status" gorm:"type:varchar(20);not null;default:'pending'"`
 	Notes      string          `json:"notes" gorm:"type:text"`
 
-	Admin         *Admin          `json:"admin,omitempty" gorm:"foreignKey:AdminID"`
-	Supplier      *Supplier       `json:"supplier,omitempty" gorm:"foreignKey:supplierID"`
-	PurchaseItems []PurchaseItems `json:"purchase_items" gorm:"foreignKey:PurchaseID"`
+	Admin         *Admin          `json:"admin,omitempty" gorm:"foreignKey:EmployeeID"`
+	Supplier      *Supplier       `json:"supplier,omitempty" gorm:"foreignKey:SupplierID"`
+	PurchaseItems []PurchaseItem `json:"purchase_items" gorm:"foreignKey:PurchaseID"`
 }
