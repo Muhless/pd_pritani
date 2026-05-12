@@ -21,7 +21,6 @@ import (
 
 func main() {
 	godotenv.Load()
-
 	// init logger
 	helper.InitLogger()
 	defer helper.Log.Sync()

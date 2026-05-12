@@ -12,6 +12,7 @@ type CustomerRepository interface {
 	Create(customer *model.Customer) error
 	Update(customer *model.Customer) error
 	Delete(id uint) error
+	Count() (int64, error)
 }
 
 type customerRepository struct {
@@ -22,17 +23,17 @@ func NewCustomerRepository(db *gorm.DB) CustomerRepository {
 	return &customerRepository{db}
 }
 
-func (r *customerRepository) FindAll(page,limit int) ([]model.Customer, int64, error) {
+func (r *customerRepository) FindAll(page, limit int) ([]model.Customer, int64, error) {
 	var customers []model.Customer
 	var total int64
 
-	offset := (page-1) * limit
+	offset := (page - 1) * limit
 
 	r.db.Model(&model.Customer{}).Count(&total)
 
 	err := r.db.Offset(offset).Limit(limit).Find(&customers).Error
 	if err != nil {
-		return nil,0, err
+		return nil, 0, err
 	}
 	return customers, total, err
 }
@@ -56,4 +57,10 @@ func (r *customerRepository) Update(customer *model.Customer) error {
 
 func (r *customerRepository) Delete(id uint) error {
 	return r.db.Delete(&model.Customer{}, id).Error
+}
+
+func (r *customerRepository) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Customer{}).Count(&count).Error
+	return count, err
 }

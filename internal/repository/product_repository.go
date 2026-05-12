@@ -12,6 +12,8 @@ type ProductRepository interface {
 	Create(product *model.Product) error
 	Update(product *model.Product) error
 	Delete(id uint) error
+	GetLowStock(limit int) ([]model.Product, error)
+	Count() (int64, error)
 }
 
 type productRepository struct {
@@ -57,4 +59,22 @@ func (r *productRepository) Update(product *model.Product) error {
 
 func (r *productRepository) Delete(id uint) error {
 	return r.db.Delete(&model.Product{}, id).Error
+}
+
+func (r *productRepository) GetLowStock(limit int) ([]model.Product, error) {
+	var products []model.Product
+
+	err := r.db.Where("stock < ?", 10).
+		Order("stock ASC").
+		Limit(limit).
+		Find(&products).Error
+	return products, err
+
+}
+
+func (r *productRepository) Count() (int64, error) {
+	var count int64
+
+	err := r.db.Model(&model.Product{}).Count(&count).Error
+	return count, err
 }

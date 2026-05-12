@@ -3,11 +3,13 @@ package service
 import (
 	"errors"
 	"fmt"
+	"pd_pritani/internal/helper"
 	"pd_pritani/internal/model"
 	"pd_pritani/internal/repository"
 	"time"
 
 	"github.com/shopspring/decimal"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -71,6 +73,7 @@ func (s *salesService) Create(userID uint, req SalesRequest) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		employee, err := s.EmployeeRepo.FindByUserId(userID)
 		if err != nil {
+			helper.Log.Error("employee not found", zap.Uint("user_id", userID))
 			return errors.New("employee not found")
 		}
 
@@ -81,10 +84,12 @@ func (s *salesService) Create(userID uint, req SalesRequest) error {
 			// product
 			product, err := s.productRepo.FindByID(item.ProductID)
 			if err != nil {
+				helper.Log.Error("product not found", zap.Uint("product_id", item.ProductID))
 				return fmt.Errorf("product not found: %d", item.ProductID)
 			}
 			// stock
 			if product.Stock.LessThan(item.Quantity) {
+				helper.Log.Warn("stock limit", zap.String("product", product.Name))
 				return fmt.Errorf("product stock limit: %s", product.Name)
 			}
 
@@ -102,6 +107,7 @@ func (s *salesService) Create(userID uint, req SalesRequest) error {
 			// deprecete stock
 			product.Stock = product.Stock.Sub(item.Quantity)
 			if err := tx.Save(product).Error; err != nil {
+				helper.Log.Error("update stock failed", zap.String("product", product.Name))
 				return errors.New("update stock failed")
 			}
 		}
@@ -115,13 +121,22 @@ func (s *salesService) Create(userID uint, req SalesRequest) error {
 			SalesItems: salesItems,
 		}
 		if err := tx.Create(sales).Error; err != nil {
+			helper.Log.Error("failed creating sales", zap.Error(err))
 			return errors.New("failed creating sales")
 		}
 
 		sales.InvoiceNumber = generateInvoiceNumber(sales.ID)
 		if err := tx.Save(sales).Error; err != nil {
+			helper.Log.Error("update invoice failed", zap.Error(err))
 			return errors.New("update invoice failed")
 		}
+
+		go func(invoiceNumber string, total decimal.Decimal) {
+			helper.Log.Info("sales created",
+				zap.String("invoice", invoiceNumber),
+				zap.String("total", total.String()),
+				zap.Uint("employee_id", employee.ID))
+		}(sales.InvoiceNumber, totalPrice)
 		return nil
 	})
 }

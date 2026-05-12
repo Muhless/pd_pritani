@@ -5,11 +5,13 @@ import (
 	"fmt"
 
 	"os"
+	"pd_pritani/internal/helper"
 	"pd_pritani/internal/model"
 	"pd_pritani/internal/repository"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -56,16 +58,19 @@ func (s *authService) Login(username, password string) (string, error) {
 	// cari user by username
 	user, err := s.userRepo.FindByUsername(username)
 	if err != nil {
+		helper.Log.Warn("user not found", zap.String("username", username))
 		return "", errors.New("Invalid Username or Password")
 	}
 
-	// make bycript
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
+		helper.Log.Warn("wrong password", zap.String("username", username))
 		return "", errors.New("Invalid username or password")
 	}
 
-	// generate token
+	helper.Log.Info("login success", zap.String("username", username),
+		zap.String("role", user.Role))
+
 	token, err := generateJWT(user)
 	if err != nil {
 		return "", errors.New("Failed generating token")

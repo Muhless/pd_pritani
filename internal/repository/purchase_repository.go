@@ -3,6 +3,7 @@ package repository
 import (
 	"pd_pritani/internal/model"
 
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
 
@@ -12,6 +13,7 @@ type PurchaseRepository interface {
 	Create(purchase *model.Purchase, items []model.PurchaseItem) error
 	UpdateStatus(purchase *model.Purchase) error
 	Delete(id uint) error
+	GetTotalExpense(month, year int) (decimal.Decimal, error)
 }
 
 type purchaseRepository struct {
@@ -65,4 +67,16 @@ func (r *purchaseRepository) Delete(id uint) error {
 		}
 		return tx.Delete(&model.Purchase{}, id).Error
 	})
+}
+
+func (r *purchaseRepository) GetTotalExpense(month, year int) (decimal.Decimal, error) {
+	var total decimal.Decimal
+
+	err := r.db.Model(&model.Purchase{}).
+		Select("COALESCE(SUM(total_price),0)").
+		Where("EXTRACT(MONTH FROM created_at) = ? AND EXTRACT(YEAR FROM created_at) =? ", month, year).
+		Where("status=?", model.PurchaseStatusPaid).
+		Where("deleted_at IS NULL").
+		Scan(&total).Error
+	return total, err
 }

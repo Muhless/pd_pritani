@@ -25,6 +25,7 @@ func ConnectDB() *gorm.DB {
 		helper.Log.Fatal("failed connect to database", zap.Error(err))
 	}
 
+
 	helper.Log.Info("database successfully connected")
 	return db
 }
