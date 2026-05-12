@@ -61,7 +61,10 @@ func main() {
 	purchaseService := service.NewPurchaseService(purchaseRepo)
 	purchaseHandler := handler.NewPurchaseHandler(purchaseService)
 
-	r := router.SetupRouter(authHandler, customerHandler, productHandler, salesHandler, supplierHandler, purchaseHandler)
+	dashboardService := service.NewDashboardService(salesRepo, purchaseRepo, productRepo, customerRepo)
+	dashboardHandler := handler.NewDashboardHandler(dashboardService)
+
+	r := router.SetupRouter(authHandler, customerHandler, productHandler, salesHandler, supplierHandler, purchaseHandler, dashboardHandler)
 
 	r.Run(":8080")
 }

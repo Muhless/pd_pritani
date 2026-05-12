@@ -19,6 +19,7 @@ func SetupRouter(
 	salesHandler *handler.SalesHandler,
 	supplierHandler *handler.SupplierHandler,
 	purchaseHandler *handler.PurchaseHandler,
+	dashboardHandler *handler.DashboardHandler,
 ) *gin.Engine {
 
 	r := gin.Default()
@@ -34,7 +35,7 @@ func SetupRouter(
 	protected.Use(middleware.AuthMiddleware())
 	protected.GET("/profile", authHandler.GetProfile)
 	protected.PATCH("/profile", authHandler.UpdateProfile)
-
+	protected.GET("/dashboard", dashboardHandler.GetDashboard)
 	{
 		admin := protected.Group("/admin")
 		admin.Use(middleware.RoleGuard("admin"))
