@@ -3,6 +3,7 @@ package mock
 import (
 	"pd_pritani/internal/model"
 
+	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -25,7 +26,7 @@ func (m *MockPurchaseRepository) FindByID(id uint) (*model.Purchase, error) {
 }
 
 func (m *MockPurchaseRepository) Create(purchase *model.Purchase, items []model.PurchaseItem) error {
-	args := m.Called(purchase,items)
+	args := m.Called(purchase, items)
 	return args.Error(0)
 }
 
@@ -37,4 +38,9 @@ func (m *MockPurchaseRepository) UpdateStatus(purchase *model.Purchase) error {
 func (m *MockPurchaseRepository) Delete(id uint) error {
 	args := m.Called(id)
 	return args.Error(0)
+}
+
+func (m *MockPurchaseRepository) GetTotalExpense(month, year int) (decimal.Decimal, error) {
+	args := m.Called(month, year)
+	return args.Get(0).(decimal.Decimal), args.Error(1)
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"pd_pritani/internal/model"
 	"pd_pritani/internal/repository"
 	"sync"
 	"time"
@@ -13,7 +14,7 @@ type DashboardData struct {
 	TotalExpense     decimal.Decimal `json:"total_expense"`
 	TotalCustomer    int64           `json:"total_customer"`
 	TotalProduct     int64           `json:"total_product"`
-	LowStockProducts interface{}     `json:"low_stock_products"`
+	LowStockProducts []model.Product `json:"low_stock_products"`
 	RecentSales      interface{}     `json:"recent_sales"`
 	Month            int             `json:"month"`
 	Year             int             `json:"year"`
@@ -118,7 +119,7 @@ func (s *dashboarService) GetDashboard() (*DashboardData, error) {
 	// low stock product
 	go func() {
 		defer wg.Done()
-		products, err := s.productRepo.Count()
+		products, err := s.productRepo.GetLowStock(5)
 		if err != nil {
 			setError(err)
 			return

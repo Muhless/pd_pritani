@@ -14,7 +14,7 @@ const (
 type Employee struct {
 	gorm.Model
 	UserID uint `json:"user_id" gorm:"uniqueIndex;not null"`
-	User   User `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:onUpdate:CASCADE,onDelete:CASCADE"`
+	
 
 	Name    string         `json:"name"`
 	Phone   string         `json:"phone" gorm:"unique"`

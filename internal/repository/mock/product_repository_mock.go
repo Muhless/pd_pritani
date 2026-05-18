@@ -37,3 +37,14 @@ func (m *MockProductRepository) Delete(id uint) error {
 	args := m.Called(id)
 	return args.Error(0)
 }
+
+func (m *MockProductRepository) Count() (int64, error) {
+	args := m.Called()
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockProductRepository) GetLowStock(limit int) ([]model.Product, error) {
+	args := m.Called(limit)
+	return args.Get(0).([]model.Product), args.Error(1)
+
+}
